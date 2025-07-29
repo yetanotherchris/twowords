@@ -35,14 +35,11 @@ The response will look like:
 
 ## Word lists
 
-The `data/` directory contains two example files:
-
-- `lat_words.txt` &ndash; words representing latitude
-- `lon_words.txt` &ndash; words representing longitude
-
-Each line is a single word. The sample lists are tiny; for true rooftop
-accuracy (about 10&nbsp;m) across the UK you would need on the order of
-100,000 unique words for latitude and about 70,000 for longitude.
+Word data is loaded from the `expanded_words.zip` archive at the repository
+root.  This file contains over a million entries.  On startup the service
+unpacks the text file and splits it into two lists &ndash; one for latitude and
+one for longitude &ndash; which provides enough coverage for the entire UK at a
+10&nbsp;m grid resolution.
 
 ## Deterministic mapping
 
