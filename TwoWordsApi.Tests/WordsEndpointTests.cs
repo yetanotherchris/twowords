@@ -22,8 +22,8 @@ public class WordsEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         response.EnsureSuccessStatusCode();
         var json = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(json);
-        Assert.Equal("alpha", doc.RootElement.GetProperty("latitudeWord").GetString());
-        Assert.Equal("apple", doc.RootElement.GetProperty("longitudeWord").GetString());
+        Assert.Equal("a", doc.RootElement.GetProperty("latitudeWord").GetString());
+        Assert.Equal("buzesi", doc.RootElement.GetProperty("longitudeWord").GetString());
     }
 
     [Fact]
@@ -33,11 +33,4 @@ public class WordsEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    [Fact]
-    public async Task ReturnsBadRequestWhenWordListTooSmall()
-    {
-        double lat = 49.0 + 0.0001 * 26; // index beyond word list
-        var response = await _client.GetAsync($"/words?lat={lat}&lon=-8.0");
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
 }

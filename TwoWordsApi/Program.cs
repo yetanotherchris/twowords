@@ -1,3 +1,5 @@
+using System.IO.Compression;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -11,17 +13,40 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-// Load dictionaries. In a real application these lists should contain
-// enough words to cover every possible coordinate step.
-var dataDir = Path.Combine(app.Environment.ContentRootPath, "data");
-var latWords = File.ReadAllLines(Path.Combine(dataDir, "lat_words.txt"));
-var lonWords = File.ReadAllLines(Path.Combine(dataDir, "lon_words.txt"));
+// Load dictionaries. The expanded word list is stored as a zip archive at
+// the repository root. To keep the repository size small we unzip it at
+// startup and split the words between latitude and longitude lists.
+var zipPath = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath,
+    "..", "expanded_words.zip"));
+string[] allWords;
+using (var zip = ZipFile.OpenRead(zipPath))
+using (var stream = zip.Entries.First().Open())
+using (var reader = new StreamReader(stream))
+{
+    var words = new List<string>();
+    string? line;
+    while ((line = reader.ReadLine()) != null)
+    {
+        if (!string.IsNullOrWhiteSpace(line))
+            words.Add(line.Trim());
+    }
+    allWords = words.ToArray();
+}
 
 const double latMin = 49.0;
 const double latMax = 60.0;
 const double lonMin = -8.0;
 const double lonMax = 2.0;
 const double step = 0.0001; // ~10m
+
+int latCount = (int)Math.Ceiling((latMax - latMin) / step) + 1;
+int lonCount = (int)Math.Ceiling((lonMax - lonMin) / step) + 1;
+
+if (allWords.Length < latCount + lonCount)
+    throw new Exception("Word list is not large enough for coverage.");
+
+var latWords = allWords.Take(latCount).ToArray();
+var lonWords = allWords.Skip(latCount).Take(lonCount).ToArray();
 
 app.MapGet("/words", (double lat, double lon) =>
 {
