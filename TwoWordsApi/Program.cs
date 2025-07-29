@@ -13,8 +13,9 @@ if (app.Environment.IsDevelopment())
 
 // Load dictionaries. In a real application these lists should contain
 // enough words to cover every possible coordinate step.
-var latWords = File.ReadAllLines(Path.Combine("data", "lat_words.txt"));
-var lonWords = File.ReadAllLines(Path.Combine("data", "lon_words.txt"));
+var dataDir = Path.Combine(app.Environment.ContentRootPath, "data");
+var latWords = File.ReadAllLines(Path.Combine(dataDir, "lat_words.txt"));
+var lonWords = File.ReadAllLines(Path.Combine(dataDir, "lon_words.txt"));
 
 const double latMin = 49.0;
 const double latMax = 60.0;
@@ -47,3 +48,6 @@ app.MapGet("/words", (double lat, double lon) =>
 });
 
 app.Run();
+
+// Needed for integration tests
+public partial class Program { }

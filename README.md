@@ -48,5 +48,13 @@ accuracy (about 10&nbsp;m) across the UK you would need on the order of
 
 The service converts a coordinate to an index by rounding it to a 10&nbsp;m
 grid. That index is used to look up a word in the respective list. As long as
-your word lists contain enough entries, each coordinate will always map to the
-same words without requiring a database or cache.
+  your word lists contain enough entries, each coordinate will always map to the
+  same words without requiring a database or cache.
+
+## Running tests
+
+The solution includes a small xUnit test project. Run the tests with:
+
+```bash
+dotnet test TwoWordsApi.Tests/TwoWordsApi.Tests.csproj -c Release
+```
