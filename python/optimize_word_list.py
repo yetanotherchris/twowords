@@ -34,14 +34,32 @@ def load_words_from_zip(zip_path: str) -> List[str]:
             words = [line.strip().lower() for line in lines if line.strip()]
     return words
 
+def load_food_dishes() -> List[str]:
+    """Load food dishes from the word-data directory for priority placement."""
+    try:
+        with open('../word-data/food_dishes_final.txt', 'r', encoding='utf-8') as f:
+            dishes = [line.strip().lower() for line in f if line.strip()]
+        return dishes
+    except FileNotFoundError:
+        print("Warning: food_dishes_final.txt not found, skipping food priority")
+        return []
+
 def load_important_indices(file_path: str) -> Set[int]:
     """Load the pre-calculated important indices for major population centers."""
     indices = set()
-    with open(file_path, 'r') as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith('#'):
-                indices.add(int(line))
+    try:
+        with open(file_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    indices.add(int(line))
+    except FileNotFoundError:
+        # Try the word-data directory
+        with open('../word-data/important_indices.txt', 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    indices.add(int(line))
     return indices
 
 def is_common_word(word: str) -> bool:
@@ -85,11 +103,12 @@ def is_simple_word(word: str) -> bool:
     
     return not any(pattern in word for pattern in difficult_patterns)
 
-def calculate_word_score(word: str) -> WordScore:
+def calculate_word_score(word: str, food_dishes: Set[str]) -> WordScore:
     """Calculate a desirability score for a word (higher = better)."""
     length = len(word)
     is_common = is_common_word(word)
     is_simple = is_simple_word(word)
+    is_food = word in food_dishes
     
     # Base score starts higher for shorter words
     score = 100.0
@@ -106,6 +125,10 @@ def calculate_word_score(word: str) -> WordScore:
     else:
         score -= 50  # Very long words get big penalty
     
+    # Food dishes get high priority for populated areas
+    if is_food:
+        score += 60  # Higher than common words bonus
+    
     # Common word bonus
     if is_common:
         score += 40
@@ -120,51 +143,67 @@ def calculate_word_score(word: str) -> WordScore:
     
     return WordScore(word, score, length, is_common, is_simple)
 
-def optimize_word_list(words: List[str], important_indices: Set[int]) -> List[str]:
-    """Create an optimized word list with best words at important indices."""
+def optimize_word_list(words: List[str], important_indices: Set[int], food_dishes: List[str]) -> List[str]:
+    """Create an optimized word list with food dishes at important indices."""
     print(f"Optimizing {len(words):,} words for {WORDS_NEEDED:,} positions...")
+    print(f"Food dishes available: {len(food_dishes)}")
+    
+    food_set = set(food_dishes)
     
     # Score all words
     print("Scoring words by desirability...")
-    scored_words = [calculate_word_score(word) for word in words]
+    scored_words = [calculate_word_score(word, food_set) for word in words]
     
     # Sort by score (best first)
     scored_words.sort(key=lambda x: x.score, reverse=True)
     
-    # Take the best words we need
-    best_words = [sw.word for sw in scored_words[:WORDS_NEEDED]]
+    # Separate food dishes from other words for strategic placement
+    food_words = [sw for sw in scored_words if sw.word in food_set]
+    non_food_words = [sw for sw in scored_words if sw.word not in food_set]
     
-    print(f"Selected top {len(best_words):,} words")
-    print(f"Best words sample: {best_words[:20]}")
+    print(f"Food dishes found: {len(food_words)}")
+    print(f"Best food dishes: {[fw.word for fw in food_words[:20]]}")
     print(f"Important indices count: {len(important_indices)}")
     
-    # Create the optimized list
-    optimized = [''] * WORDS_NEEDED
+    # Create the optimized list - initialize with placeholder words
+    optimized = ['placeholder'] * WORDS_NEEDED
     used_words = set()
     
-    # First, place the very best words at important indices
+    # FIRST: Place the best FOOD DISHES at ALL important population indices
     important_indices_list = sorted(list(important_indices))
+    print(f"Placing FOOD DISHES at {len(important_indices_list)} important indices...")
+    
     for i, idx in enumerate(important_indices_list):
-        if idx < WORDS_NEEDED and i < len(best_words):
-            optimized[idx] = best_words[i]
-            used_words.add(best_words[i])
+        if idx < WORDS_NEEDED and i < len(food_words):
+            word = food_words[i].word
+            optimized[idx] = word
+            used_words.add(word)
+            print(f"  Index {idx:6d}: '{word}' (food dish, score: {food_words[i].score:.1f})")
+        elif idx < WORDS_NEEDED:
+            # Fallback to best non-food word if we run out of food dishes (shouldn't happen)
+            word = non_food_words[0].word
+            optimized[idx] = word
+            used_words.add(word)
+            print(f"  Index {idx:6d}: '{word}' (fallback, score: {non_food_words[0].score:.1f})")
     
-    # Fill remaining positions with remaining good words
-    word_idx = 0
+    # SECOND: Fill all remaining positions with the best unused words (food + non-food)
+    print("Filling remaining positions with best unused words...")
+    remaining_words = [sw.word for sw in scored_words if sw.word not in used_words]
+    
+    fill_index = 0
     for pos in range(WORDS_NEEDED):
-        if optimized[pos] == '':  # Position not filled yet
-            # Find next unused word
-            while word_idx < len(best_words) and best_words[word_idx] in used_words:
-                word_idx += 1
-            if word_idx < len(best_words):
-                optimized[pos] = best_words[word_idx]
-                used_words.add(best_words[word_idx])
-                word_idx += 1
+        if optimized[pos] == 'placeholder':  # Position not filled yet
+            if fill_index < len(remaining_words):
+                optimized[pos] = remaining_words[fill_index]
+                fill_index += 1
+            else:
+                # Fallback if we run out (shouldn't happen)
+                optimized[pos] = f"word{pos}"
     
-    # Verify no empty positions
-    empty_positions = [i for i, word in enumerate(optimized) if word == '']
-    if empty_positions:
-        print(f"Warning: {len(empty_positions)} empty positions found")
+    # Verify no placeholder positions remain
+    placeholders = [i for i, word in enumerate(optimized) if word == 'placeholder']
+    if placeholders:
+        print(f"Warning: {len(placeholders)} placeholder positions remain!")
     
     return optimized
 
@@ -179,9 +218,19 @@ def main():
     print("=" * 50)
     
     # Load current words
-    print("Loading words from expanded_words.zip...")
-    words = load_words_from_zip('../expanded_words.zip')
+    print("Loading words from word-data/expanded_words.txt...")
+    try:
+        with open('../word-data/expanded_words.txt', 'r', encoding='utf-8') as f:
+            words = [line.strip().lower() for line in f if line.strip()]
+    except FileNotFoundError:
+        print("expanded_words.txt not found in word-data, trying zip file...")
+        words = load_words_from_zip('../expanded_words.zip')
     print(f"Loaded {len(words):,} words")
+    
+    # Load food dishes for priority placement
+    print("Loading food dishes for priority placement...")
+    food_dishes = load_food_dishes()
+    print(f"Loaded {len(food_dishes)} food dishes")
     
     # Load important indices
     print("Loading important population indices...")
@@ -189,7 +238,7 @@ def main():
     print(f"Loaded {len(important_indices)} important indices")
     
     # Optimize the word list
-    optimized_words = optimize_word_list(words, important_indices)
+    optimized_words = optimize_word_list(words, important_indices, food_dishes)
     
     # Save results
     output_file = 'optimized_words.txt'
@@ -201,11 +250,24 @@ def main():
     print(f"Total words in optimized list: {len(optimized_words):,}")
     
     # Sample what words are at important indices
-    print(f"\nWords at major population centers:")
-    important_list = sorted(list(important_indices))[:10]  # Show first 10
+    print(f"\nFOOD DISHES at major population centres:")
+    important_list = sorted(list(important_indices))[:15]  # Show first 15
+    food_set = set(food_dishes)
     for idx in important_list:
         if idx < len(optimized_words):
-            print(f"  Index {idx:6d}: '{optimized_words[idx]}'")
+            word = optimized_words[idx]
+            is_food = word in food_set
+            status = "🍽️ FOOD" if is_food else "❌ NON-FOOD"
+            print(f"  Index {idx:6d}: '{word}' {status}")
+    
+    # Check food dishes usage at important indices
+    important_words = [optimized_words[idx] for idx in important_indices if idx < len(optimized_words)]
+    food_at_important = sum(1 for word in important_words if word in food_set)
+    print(f"\nFood dishes at important indices: {food_at_important}/{len(important_words)} ({food_at_important/len(important_words)*100:.1f}%)")
+    
+    # Check overall food dishes usage
+    food_count = sum(1 for word in optimized_words[:1000] if word in food_set)
+    print(f"Food dishes in top 1000 positions: {food_count}")
     
     # Show length distribution
     lengths = [len(word) for word in optimized_words[:1000]]

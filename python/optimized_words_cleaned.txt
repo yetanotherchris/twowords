@@ -1,42 +1,8 @@
-a
-aer
-all
-the
-be
-aly
-to
-an
-of
-and
-and
-a
-in
-are
-as
-it
-for
-not
-at
-on
-as
-you
-at
-but
-his
-by
-we
-say
-her
-she
 or
-an
-be
 bed
 ber
 big
 boy
-but
-by
 can
 car
 cat
@@ -54,7 +20,6 @@ fed
 fer
 few
 fly
-for
 ged
 ger
 get
@@ -64,15 +29,11 @@ had
 has
 he
 hed
-her
 him
-his
 how
 if
-in
 ing
 is
-it
 its
 jed
 jer
@@ -90,15 +51,11 @@ mer
 my
 ned
 new
-not
 now
 oer
-of
 oil
 old
-on
 one
-or
 our
 out
 own
@@ -110,18 +67,14 @@ qed
 red
 rly
 run
-say
 sed
 see
 ser
-she
 sly
 so
 sun
 ted
 ter
-the
-to
 top
 try
 two
@@ -130,7 +83,6 @@ use
 ver
 was
 way
-we
 wed
 wer
 who
@@ -139,7 +91,6 @@ yed
 yer
 yes
 yet
-you
 zed
 zer
 too
@@ -287,7 +238,6 @@ baied
 baily
 baked
 baker
-baklava
 bakly
 baled
 baler
@@ -374,7 +324,6 @@ brest
 bried
 brier
 bring
-brioche
 broly
 buber
 bubly
@@ -398,12 +347,10 @@ caked
 caker
 caled
 caly
-calzone
 caned
 caner
 caped
 caper
-capers
 cared
 carer
 cased
@@ -420,18 +367,15 @@ cered
 cerer
 cest
 ceted
-ceviche
 chbly
 cheer
 cher
 chest
 chily
 ching
-chorizo
 chrly
 chuer
 chuly
-chutney
 cicer
 cider
 cited
@@ -490,7 +434,6 @@ cyber
 cyder
 dacer
 daer
-daikon
 daily
 daked
 daker
@@ -650,7 +593,6 @@ emmer
 emmly
 ended
 ender
-endive
 ened
 enged
 enoed
@@ -698,7 +640,6 @@ fader
 fager
 faked
 faker
-falafel
 fally
 famed
 fared
@@ -718,7 +659,6 @@ feer
 feest
 felly
 femed
-fennel
 ferly
 fest
 feted
@@ -756,7 +696,6 @@ flyer
 foaly
 foder
 folly
-fondue
 fonly
 foxed
 foxer
@@ -770,7 +709,6 @@ fried
 frier
 frily
 frly
-from
 fryer
 fuder
 fully
@@ -833,7 +771,6 @@ gleed
 gler
 glued
 gluer
-gnocchi
 godly
 goer
 gofer
@@ -878,7 +815,6 @@ hared
 hated
 hater
 hauly
-have
 haver
 hawed
 hawer
@@ -953,7 +889,6 @@ huker
 hully
 huly
 humer
-hummus
 huned
 hurly
 husly
@@ -1057,7 +992,6 @@ jezly
 jger
 jibed
 jiber
-jicama
 jing
 jived
 jnoed
@@ -1111,7 +1045,6 @@ kidly
 kiely
 kier
 killy
-kimchi
 king
 kited
 kiter
@@ -1148,7 +1081,6 @@ laker
 lally
 lamed
 lamer
-lasagna
 lased
 laser
 lated
@@ -1168,7 +1100,6 @@ leer
 leger
 lened
 lenly
-lentils
 leper
 lerer
 lerly
@@ -1387,7 +1318,6 @@ nthly
 nuder
 nuner
 nurly
-nutmeg
 oared
 oater
 obaer
@@ -1439,7 +1369,6 @@ orbed
 order
 ordly
 ored
-oregano
 orely
 orer
 orily
@@ -1477,7 +1406,6 @@ oyser
 ozaly
 paced
 pacer
-paella
 paged
 pager
 pagly
@@ -1486,9 +1414,7 @@ paler
 pally
 paly
 paned
-papaya
 paper
-paprika
 pared
 parer
 parly
@@ -1533,7 +1459,6 @@ plzer
 poked
 poker
 poled
-polenta
 poler
 polly
 poly
@@ -1569,7 +1494,6 @@ qued
 queer
 quely
 quest
-quinoa
 rably
 raced
 racer
@@ -1597,7 +1521,6 @@ rater
 rauly
 raved
 raver
-ravioli
 rawer
 rawly
 raxed
@@ -1628,7 +1551,6 @@ rhned
 rhued
 riced
 ricer
-ricotta
 rider
 riely
 rier
@@ -1642,7 +1564,6 @@ riped
 riper
 rised
 riser
-risotto
 rived
 river
 robed
@@ -1688,16 +1609,13 @@ saded
 sader
 sadly
 safer
-saffron
 sager
 saily
 saker
-salami
 sally
 samly
 saned
 saner
-sashimi
 sated
 saued
 sauer
@@ -1715,7 +1633,6 @@ scdly
 scher
 scler
 sealy
-seaweed
 seder
 seed
 seely
@@ -1803,7 +1720,6 @@ soily
 soled
 soler
 sonly
-sorbet
 sorer
 soter
 soued
@@ -1818,7 +1734,6 @@ speed
 speer
 spied
 spier
-spinach
 spued
 spyer
 ssed
@@ -1867,7 +1782,6 @@ tamer
 taned
 taped
 taper
-tapioca
 tared
 tater
 taver
@@ -1883,18 +1797,15 @@ teer
 teest
 tehed
 telly
-tempura
 test
 tewed
 tewer
 tewly
 texer
-that
 thbed
 thed
 theer
 thing
-this
 thoed
 thoer
 tiber
@@ -1946,7 +1857,6 @@ trier
 troer
 trued
 truer
-truffle
 truly
 tsked
 tubed
@@ -2024,7 +1934,6 @@ vaily
 valed
 valer
 vaned
-vanilla
 vaser
 vealy
 veer
@@ -2076,7 +1985,6 @@ waned
 wanly
 wared
 warly
-wasabi
 water
 waved
 waver
@@ -2119,13 +2027,11 @@ wirer
 wised
 wiser
 wited
-with
 wived
 wiver
 wkly
 wolly
 woner
-wontons
 wowed
 wrest
 wried
@@ -2156,7 +2062,6 @@ yided
 yined
 yiner
 ymaed
-yogurt
 yoked
 yoker
 yomer
@@ -2690,7 +2595,6 @@ dl
 dlr
 dm
 dn
-do
 doa
 dob
 doc
@@ -3792,6 +3696,7 @@ pfx
 pg
 ph
 phi
+pho
 phr
 phu
 pi
@@ -4774,7 +4679,6 @@ alysed
 amaled
 amaler
 amaned
-amaranth
 amared
 amarer
 amated
@@ -4808,7 +4712,6 @@ anaser
 anasly
 anatly
 anaxer
-anchovies
 ancoly
 andely
 anding
@@ -4837,7 +4740,6 @@ anteed
 anther
 antied
 anting
-antipasto
 antler
 anzaed
 anzaer
@@ -4890,7 +4792,6 @@ aroned
 arrest
 arring
 artaed
-artichoke
 artier
 artily
 aruned
@@ -4921,7 +4822,6 @@ asnier
 asnily
 asoing
 aspaer
-asparagus
 assner
 astaed
 astaly
@@ -5026,7 +4926,6 @@ balled
 baller
 balter
 baltly
-bamboo
 bammed
 banded
 bander
@@ -5041,7 +4940,6 @@ banner
 banter
 baping
 baraly
-barbacoa
 barbed
 barber
 barded
@@ -5364,7 +5262,6 @@ braked
 braker
 braner
 branly
-bratwurst
 braved
 braver
 brawer
@@ -5500,7 +5397,6 @@ cabbed
 cabber
 cabled
 cabler
-cacciatore
 cached
 cacked
 cadded
@@ -5541,7 +5437,6 @@ cancer
 caning
 canker
 canned
-cannelloni
 canner
 canoed
 canted
@@ -5553,7 +5448,6 @@ capped
 capper
 captly
 carcer
-cardamom
 carded
 carder
 career
@@ -5578,7 +5472,6 @@ casing
 casked
 casper
 casser
-cassoulet
 casted
 caster
 cather
@@ -5688,12 +5581,10 @@ chuter
 cicely
 cidaly
 cilaed
-cilantro
 ciloer
 cimier
 cinder
 cinily
-cinnamon
 cinter
 cipher
 circed
@@ -5849,7 +5740,6 @@ cotter
 cotver
 couped
 couper
-couscous
 couter
 covely
 coving
@@ -5889,7 +5779,6 @@ creter
 crewed
 crewer
 crined
-croissant
 croker
 cromer
 crowed
@@ -5903,7 +5792,6 @@ cruzer
 crying
 cubaed
 cubing
-cucumber
 cudaly
 cuddly
 cueing
@@ -6357,7 +6245,6 @@ dumbly
 dummly
 dumped
 dumper
-dumplings
 dunaed
 dunaly
 dunder
@@ -6517,11 +6404,9 @@ emmied
 emmyly
 emoted
 emoter
-empanada
 empest
 emyled
 enaing
-enchilada
 ending
 endoed
 endoer
@@ -6750,7 +6635,6 @@ fester
 feting
 fetted
 fetter
-fettuccine
 feuded
 feuder
 feuing
@@ -6922,7 +6806,6 @@ freied
 freing
 frerer
 frilly
-frittata
 frized
 frizer
 frling
@@ -7068,7 +6951,6 @@ gayned
 gaysed
 gayser
 gazing
-gazpacho
 geared
 geatly
 gebing
@@ -7141,6 +7023,7 @@ gimmer
 gimped
 gimper
 ginaer
+ginger
 ginned
 ginner
 gipped
@@ -7297,7 +7180,6 @@ grozer
 gruber
 grumly
 grusly
-guacamole
 guatly
 gucked
 guffer
@@ -7879,7 +7761,6 @@ jahnly
 jailed
 jailer
 jainer
-jambalaya
 jambed
 jamber
 jamily
@@ -8391,7 +8272,6 @@ lauded
 lauder
 lauter
 laveer
-lavender
 lavied
 lavier
 laving
@@ -8531,7 +8411,6 @@ limply
 linaly
 linder
 linger
-linguine
 linier
 lining
 linked
@@ -8799,7 +8678,6 @@ maraly
 marbly
 marged
 marily
-marinara
 marjly
 marked
 marker
@@ -9294,7 +9172,6 @@ nolier
 noling
 noming
 nonied
-noodles
 noraer
 norded
 norder
@@ -9576,7 +9453,6 @@ paring
 parked
 parker
 parled
-parmesan
 parred
 parrer
 parrly
@@ -9868,7 +9744,6 @@ proged
 proker
 promed
 proper
-prosciutto
 prosed
 proser
 proted
@@ -10313,7 +10188,6 @@ rorker
 roryed
 roryer
 rosaly
-rosemary
 rosied
 rosier
 rosily
@@ -10495,12 +10369,10 @@ sayred
 sayrer
 scaled
 scaler
-scallops
 scaped
 scared
 scarer
 scbely
-schnitzel
 scioly
 scoped
 scored
@@ -10846,7 +10718,6 @@ sourly
 soused
 souser
 souter
-souvlaki
 sowder
 sowing
 soyled
@@ -11083,7 +10954,6 @@ talked
 talker
 taller
 talter
-tamarind
 tamber
 tamely
 tamest
@@ -11336,7 +11206,6 @@ topply
 torely
 torier
 torted
-tortilla
 tosher
 toshly
 tosily
@@ -11437,7 +11306,6 @@ turfed
 turied
 turing
 turker
-turmeric
 turned
 turner
 tushed
@@ -12046,7 +11914,6 @@ yagger
 yahver
 yakaed
 yakaer
-yakitori
 yakked
 yakker
 yamely
@@ -12219,7 +12086,6 @@ zosing
 zoster
 zougly
 zriker
-zucchini
 zuluer
 zunily
 zyskly
@@ -12501,6 +12367,7 @@ admov
 admrx
 adnex
 adobe
+adobo
 adod
 adolf
 adon
@@ -12707,6 +12574,7 @@ ains
 aint
 ainu
 ainus
+aioli
 aion
 aira
 airan
@@ -14022,6 +13890,7 @@ base
 bases
 bash
 basic
+basil
 basin
 basis
 bask
@@ -14977,6 +14846,7 @@ bribe
 brick
 brid
 bride
+brie
 brief
 bries
 brig
@@ -16812,6 +16682,7 @@ cumar
 cumay
 cumbu
 cumic
+cumin
 cumol
 cump
 cumyl
@@ -16860,6 +16731,7 @@ curn
 curns
 curr
 currs
+curry
 curs
 cursa
 curse
@@ -18222,7 +18094,6 @@ ebbs
 ebcd
 eben
 eblis
-pho
 eboe
 ebon
 ebons
@@ -18351,6 +18222,7 @@ eleme
 elemi
 eleut
 elev
+a
 eleve
 elfic
 elfin
@@ -19171,6 +19043,7 @@ fesse
 festa
 feste
 festy
+feta
 fetal
 fetas
 fetch
@@ -20477,6 +20350,7 @@ goto
 gotos
 gotra
 gotta
+gouda
 goudy
 gouge
 goumi
@@ -20696,7 +20570,6 @@ guhr
 guiac
 guib
 guiba
-ginger
 guid
 guide
 guido
@@ -20823,6 +20696,7 @@ gyves
 h
 haab
 haaf
+aer
 haafs
 haak
 haar
@@ -22492,6 +22366,7 @@ kakke
 kala
 kalam
 kalan
+kale
 kales
 kali
 kalif
@@ -22599,6 +22474,7 @@ keas
 keat
 keats
 keawe
+kebab
 kebar
 kebby
 kebob
@@ -24129,6 +24005,7 @@ mahal
 mahar
 mahat
 mahdi
+mahi
 mahoe
 mahra
 mahri
@@ -24232,6 +24109,7 @@ mang
 manga
 mange
 mangi
+mango
 mangy
 mani
 mania
@@ -24543,7 +24421,6 @@ merop
 meros
 merry
 merse
-adobo
 merv
 mesa
 mesad
@@ -24666,6 +24543,7 @@ milo
 milor
 milos
 milpa
+all
 mils
 milt
 milts
@@ -24744,6 +24622,7 @@ mise
 mises
 misgo
 misky
+miso
 misos
 miss
 missa
@@ -24814,7 +24693,6 @@ modus
 mody
 moeck
 moet
-aioli
 moff
 moggy
 mogo
@@ -24857,6 +24735,7 @@ molas
 mold
 molds
 moldy
+mole
 moles
 molet
 molge
@@ -24935,6 +24814,7 @@ moran
 moras
 morat
 moray
+the
 mord
 mordu
 mordv
@@ -25042,7 +24922,6 @@ moyo
 moze
 mozo
 mozos
-mozzarella
 mpbs
 mphps
 mpret
@@ -25071,7 +24950,6 @@ mudra
 muds
 muff
 muffs
-basil
 muffy
 mufti
 mufty
@@ -25164,7 +25042,6 @@ muset
 musgu
 mush
 musha
-mushrooms
 mushy
 music
 musie
@@ -25194,6 +25071,7 @@ myal
 myall
 mycol
 myel
+be
 mylar
 mymar
 myna
@@ -25940,6 +25818,7 @@ oket
 okey
 okia
 okie
+okra
 okras
 okro
 okrug
@@ -26464,6 +26343,7 @@ passe
 passo
 passu
 past
+pasta
 paste
 pasts
 pasty
@@ -26810,6 +26690,7 @@ pikey
 piki
 pikle
 piky
+pilaf
 pilar
 pilau
 pilaw
@@ -26913,6 +26794,7 @@ piss
 pist
 piste
 pisum
+pita
 pitas
 pitau
 pitch
@@ -27518,7 +27400,6 @@ putid
 puton
 puts
 putt
-brie
 putti
 putto
 putts
@@ -27637,6 +27518,7 @@ quiet
 quiff
 quila
 quill
+aly
 quilt
 quim
 quin
@@ -28842,6 +28724,7 @@ saiva
 sajou
 saka
 sakai
+sake
 sakel
 sakes
 sakha
@@ -28873,6 +28756,7 @@ salp
 salpa
 salps
 sals
+salsa
 salse
 salt
 salta
@@ -30490,6 +30374,7 @@ squaw
 squeg
 squet
 squib
+squid
 squin
 squit
 squiz
@@ -30888,6 +30773,7 @@ surra
 surv
 surya
 susan
+sushi
 susi
 susie
 suss
@@ -31156,7 +31042,6 @@ tamus
 tana
 tanak
 tanan
-tandoori
 tandy
 tane
 tang
@@ -31183,6 +31068,7 @@ tanya
 tanzy
 taos
 tapa
+tapas
 tape
 tapen
 tapes
@@ -31530,7 +31416,6 @@ thete
 thew
 thews
 thewy
-they
 theyd
 thick
 thief
@@ -31603,6 +31488,7 @@ thurm
 thurt
 thus
 thuya
+thyme
 thymi
 thyms
 thymy
@@ -31764,6 +31650,7 @@ toffs
 toffy
 toft
 tofts
+tofu
 tofus
 toga
 togae
@@ -33113,7 +33000,6 @@ vinas
 vinca
 vince
 vinci
-vindaloo
 vine
 vinea
 vines
@@ -34402,8 +34288,6 @@ zyme
 zymes
 zymic
 zymin
-bouillabaisse
-charcuterie
 aaltoly
 aanidom
 aaniful
@@ -34859,7 +34743,6 @@ acepots
 acequia
 acerae
 acerata
-cumin
 acerate
 acerbas
 acerber
@@ -34976,6 +34859,7 @@ acknown
 ackton
 aclemon
 aclinal
+to
 aclinic
 acloud
 aclydes
@@ -36749,6 +36633,7 @@ almoign
 almoin
 almoing
 almond
+almonds
 almondy
 almoner
 almonry
@@ -37479,7 +37364,6 @@ anapes
 anapest
 anaphe
 anaphia
-curry
 anapnea
 anapsid
 anaqua
@@ -37595,6 +37479,7 @@ andron
 andvari
 andydom
 aneared
+an
 anears
 aneath
 anelace
@@ -39079,6 +38964,7 @@ artydom
 artyful
 artyive
 arugola
+arugula
 aruloly
 arumin
 aruncus
@@ -39545,7 +39431,6 @@ ataldom
 ataleer
 ataless
 atalful
-feta
 ataling
 ataman
 atamans
@@ -39660,6 +39545,7 @@ atones
 atonful
 atonia
 atonic
+of
 atonics
 atonies
 atoning
@@ -40313,6 +40199,7 @@ avivaer
 avives
 avivful
 avoable
+avocado
 avocage
 avocat
 avocate
@@ -40927,6 +40814,7 @@ bakerly
 bakers
 bakery
 bakings
+baklava
 baklawa
 bakless
 bakongo
@@ -43809,7 +43697,6 @@ blitum
 blitzed
 blitzer
 blitzes
-gouda
 blizz
 blksize
 bloated
@@ -43922,6 +43809,7 @@ blument
 blumes
 bluming
 blumive
+and
 blunder
 blunge
 blunged
@@ -44082,7 +43970,6 @@ bodyize
 bodyous
 boebera
 boeotia
-kale
 boeotic
 boerdom
 boerned
@@ -44195,6 +44082,7 @@ boleser
 boless
 bolete
 boletes
+and
 boleti
 boletic
 boletus
@@ -44806,7 +44694,6 @@ bracken
 bracker
 bracket
 bracky
-kebab
 bracon
 bractea
 bracted
@@ -44919,6 +44806,7 @@ brassy
 bratina
 brattie
 brattle
+a
 bratty
 braula
 brauna
@@ -45152,6 +45040,7 @@ brinks
 brinned
 brinny
 brinyer
+brioche
 briocos
 briolet
 brioned
@@ -46646,6 +46535,7 @@ calyon
 calypso
 calyxes
 calzada
+calzone
 camaca
 camacan
 camacey
@@ -46989,6 +46879,7 @@ capella
 capeous
 capered
 caperer
+capers
 capeter
 capette
 capful
@@ -48006,7 +47897,6 @@ cerfoil
 cerias
 ceride
 cerilla
-mahi
 cerillo
 ceriman
 cerine
@@ -48103,6 +47993,7 @@ cetusly
 cetylic
 cevenol
 cevian
+ceviche
 cevine
 ceylon
 ceyxive
@@ -48115,7 +48006,7 @@ chabuks
 chacate
 chaccon
 chacive
-mango
+in
 chacker
 chackle
 chacma
@@ -48207,7 +48098,6 @@ chalina
 chaling
 chalive
 chalked
-miso
 chalker
 chalkos
 chalks
@@ -48225,6 +48115,7 @@ chalons
 chalot
 chaloth
 chalque
+are
 chalta
 chaluka
 chalutz
@@ -48316,6 +48207,7 @@ chapeau
 chapel
 chapels
 chapes
+as
 chapin
 chaplet
 chaplin
@@ -49008,6 +48900,7 @@ chorism
 choriso
 chorist
 chorize
+chorizo
 chorogi
 choroid
 choroti
@@ -49174,6 +49067,7 @@ chutes
 chuting
 chutist
 chutnee
+chutney
 chuttie
 chutzpa
 chuvash
@@ -50082,7 +49976,6 @@ coargas
 coarges
 coargos
 coarhna
-mole
 coarica
 coaries
 coarion
@@ -50189,6 +50082,7 @@ cobaned
 cobang
 cobank
 cobanly
+it
 cobapt
 cobaray
 cobarca
@@ -54119,7 +54013,6 @@ creeded
 creeds
 creeing
 creeker
-okra
 creeks
 creeky
 creeled
@@ -54226,6 +54119,7 @@ crimea
 crimean
 crimes
 crimine
+for
 crimini
 crimmer
 crimmy
@@ -55333,6 +55227,7 @@ daidled
 daidlie
 daijous
 daikers
+daikon
 dailely
 dailess
 dailful
@@ -55970,7 +55865,6 @@ deamana
 deamand
 deamari
 deamary
-pasta
 deamati
 deamaya
 deamber
@@ -56076,6 +55970,7 @@ deashed
 deashes
 deashir
 deashli
+not
 deasian
 deasil
 deaslam
@@ -57572,7 +57467,6 @@ dekursh
 dekurth
 dekurus
 dekush
-pilaf
 dekuth
 dekwok
 dekyte
@@ -57678,6 +57572,7 @@ delewes
 delfts
 delhary
 deliaed
+at
 deliaer
 delian
 deliao
@@ -59780,7 +59675,6 @@ dimeter
 dimetry
 diminue
 dimiss
-pita
 dimitry
 dimity
 dimmers
@@ -59886,6 +59780,7 @@ dioptry
 diorama
 diorful
 dioring
+on
 diorism
 diorite
 diorize
@@ -61094,7 +60989,6 @@ drouket
 droukit
 drouks
 droumy
-sake
 drouth
 drouths
 drouthy
@@ -61200,6 +61094,7 @@ dryster
 drywall
 dsects
 dsname
+as
 dsnames
 dtente
 duadic
@@ -63011,6 +62906,7 @@ endings
 endite
 endited
 endites
+endive
 endives
 endjunk
 endleaf
@@ -63820,7 +63716,6 @@ errants
 errata
 erratas
 erratic
-salsa
 erratum
 errhine
 errite
@@ -63925,6 +63820,7 @@ eskous
 eskuara
 eskyage
 eslabon
+you
 esliely
 eslisor
 esloign
@@ -64506,7 +64402,6 @@ exalbur
 exalca
 exalco
 exalcon
-squid
 exalcor
 exaldan
 exaldas
@@ -64611,6 +64506,7 @@ exartie
 exarum
 exarun
 exaruns
+at
 exarvid
 exarvie
 exascus
@@ -65296,7 +65192,6 @@ exeunt
 exevan
 exevang
 exevant
-sushi
 exevart
 exevey
 exevin
@@ -65401,6 +65296,7 @@ exgeist
 exgelee
 exgenet
 exgenf
+but
 exgenie
 exgenna
 exgenoa
@@ -67158,6 +67054,7 @@ fakers
 fakery
 fakirs
 fakofo
+falafel
 falange
 falasha
 falbala
@@ -67421,7 +67318,6 @@ fastaed
 fasten
 fastens
 fastest
-tapas
 fasting
 fastish
 fastus
@@ -67525,6 +67421,7 @@ favous
 favuses
 fawnage
 fawners
+his
 fawnery
 fawnful
 fawnier
@@ -67729,6 +67626,7 @@ fenmen
 fennage
 fennec
 fennecs
+fennel
 fennels
 fennful
 fennici
@@ -68417,7 +68315,6 @@ flanked
 flanken
 flanker
 flanks
-thyme
 flanky
 flanned
 flannel
@@ -68520,6 +68417,7 @@ fleeted
 fleeten
 fleeter
 fleetly
+by
 fleets
 flemful
 fleming
@@ -68639,7 +68537,6 @@ floppy
 florae
 florage
 floral
-tofu
 floraly
 floran
 floras
@@ -68742,6 +68639,7 @@ flunks
 flunky
 fluoran
 fluoric
+we
 fluorid
 fluorin
 fluors
@@ -68949,6 +68847,7 @@ fondler
 fondles
 fondon
 fondouk
+fondue
 fondues
 fonduk
 fondus
@@ -69530,7 +69429,6 @@ frigate
 frigga
 frigged
 frigger
-almonds
 friggle
 frigid
 frigor
@@ -69632,6 +69530,7 @@ froren
 frosted
 froster
 frostly
+say
 frosts
 frosty
 frothed
@@ -71774,6 +71673,7 @@ gnessic
 gnetum
 gnetums
 gnniage
+gnocchi
 gnomes
 gnomic
 gnomide
@@ -75653,6 +75553,7 @@ hummie
 humming
 hummock
 hummum
+hummus
 humoing
 humoral
 humored
@@ -78556,6 +78457,7 @@ jibman
 jibmen
 jiboya
 jibstay
+jicama
 jicamas
 jicaque
 jicara
@@ -78626,7 +78528,6 @@ jinking
 jinkle
 jinnee
 jinnies
-arugula
 jinnyed
 jinriki
 jinsha
@@ -78720,12 +78621,12 @@ jodyful
 jodyive
 jodyner
 joebush
-avocado
 joedage
 joedom
 joejoul
 joelage
 joeless
+her
 joelier
 joerged
 joerger
@@ -78819,6 +78720,7 @@ jonasly
 jondla
 jondom
 joneive
+she
 jonelly
 joneses
 jonglem
@@ -80310,6 +80212,7 @@ kiluba
 kiluck
 kimbang
 kimchee
+kimchi
 kimdom
 kimive
 kimmily
@@ -81825,6 +81728,7 @@ larvate
 larvule
 larynx
 lasage
+lasagna
 lasagne
 lasaled
 lascar
@@ -82419,6 +82323,7 @@ lentic
 lentigo
 lentil
 lentile
+lentils
 lentisc
 lentisk
 lentner
@@ -90626,6 +90531,7 @@ nutlet
 nutlets
 nutlike
 nutmeat
+nutmeg
 nutmegs
 nutpick
 nutria
@@ -91777,6 +91683,7 @@ ordures
 oreads
 oreaser
 orectic
+oregano
 oregful
 oregon
 oregoni
@@ -93183,6 +93090,7 @@ padused
 paeans
 paegel
 paegle
+paella
 paellas
 paenula
 paeonia
@@ -93583,6 +93491,7 @@ papalty
 papane
 papaver
 papaws
+papaya
 papayan
 papayas
 papboat
@@ -93622,6 +93531,7 @@ pappus
 pappyri
 papreg
 paprica
+paprika
 papriks
 papuan
 papuans
@@ -96442,6 +96352,7 @@ polecat
 poleis
 poleman
 polemic
+polenta
 polers
 polesaw
 polewig
@@ -100601,6 +100512,7 @@ quinize
 quinnat
 quinned
 quinnet
+quinoa
 quinoas
 quinoid
 quinol
@@ -101388,6 +101300,7 @@ ravines
 raviney
 ravings
 ravins
+ravioli
 ravious
 ravish
 ravison
@@ -105828,6 +105741,7 @@ rickous
 ricksha
 rickyed
 ricoage
+ricotta
 ricous
 ricrac
 ricracs
@@ -106060,6 +105974,7 @@ riskily
 risking
 riskish
 risorse
+risotto
 risque
 risquee
 rissaed
@@ -107188,6 +107103,7 @@ saffian
 saffior
 safflor
 safflow
+saffron
 safine
 safined
 safini
@@ -107304,6 +107220,7 @@ salage
 salago
 salamat
 salame
+salami
 salamis
 salamo
 salarer
@@ -107793,6 +107710,7 @@ sashay
 sashays
 sashery
 sashes
+sashimi
 sashing
 sasine
 sasins
@@ -108722,6 +108640,7 @@ seaward
 seaware
 seaway
 seaways
+seaweed
 seawife
 seaworn
 sebacic
@@ -109999,3 +109918,58 @@ shemaka
 shember
 shemful
 shemite
+shemize
+shemuer
+shends
+shenful
+shenger
+sheogue
+sheoled
+sheolic
+sheols
+shepage
+shepdom
+shepful
+shepive
+sheppey
+sherage
+sherani
+sherbet
+sherds
+shereef
+sheria
+sheriat
+sherier
+sherif
+sherifa
+sheriff
+sherifi
+sherifs
+sherify
+sherily
+sherive
+sherize
+sherled
+sherler
+sherman
+shermed
+sherpa
+sherpas
+sherred
+sherri
+sherris
+sherry
+shesha
+sheuch
+sheuchs
+sheugh
+sheughs
+shevel
+shevri
+shewel
+shewers
+shewing
+sheyaer
+sheyle
+shfsep
+shiatsu
