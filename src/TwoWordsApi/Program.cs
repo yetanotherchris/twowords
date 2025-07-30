@@ -122,7 +122,7 @@ app.MapGet("/examples", () =>
 
             if (latIndex < latCount && lonIndex < lonCount)
             {
-                examples.Add($"{city.Name} - {allWords[latIndex]} {allWords[lonIndex]} ({city.Lon}, {city.Lat})");
+                examples.Add($"{city.Name} - {allWords[latIndex]}.{allWords[lonIndex]} ({city.Lon}, {city.Lat})");
             }
         }
     }

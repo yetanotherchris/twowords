@@ -15,6 +15,12 @@ import random
 with open("words_final.txt", "r") as f:
     real_words = set(word.strip().lower() for word in f if word.strip())
 
+# Load proper nouns for pseudo-word generation
+with open("proper_nouns.txt", "r") as f:
+    proper_nouns = [word.strip().lower() for word in f if word.strip()]
+
+print(f"Loaded {len(real_words)} real words and {len(proper_nouns)} proper nouns")
+
 # Step 2: Generate compound words by combining existing real words
 # Examples: "redhouse", "cheesehorse", "bluewater", "quickfire"
 compound_words = set()
@@ -38,38 +44,63 @@ while len(compound_words) < target_compounds:
 
 print(f"Generated {len(compound_words)} compound words")
 
-# Step 3: Define more pronounceable English syllables for pseudo-words
-# Based on common English phonetic patterns and prefixes/suffixes
-syllables = [
-    # Common prefixes
-    "pre", "pro", "de", "re", "un", "in", "ex", "con", "sub", "over",
-    # Vowel-consonant patterns
-    "al", "ar", "er", "or", "en", "an", "on", "el", "il", "ul",
-    # Consonant-vowel patterns  
-    "ba", "be", "bi", "bo", "bu", "ca", "ce", "ci", "co", "cu",
-    "da", "de", "di", "do", "du", "fa", "fe", "fi", "fo", "fu",
-    "ga", "ge", "gi", "go", "gu", "ha", "he", "hi", "ho", "hu",
-    "ja", "je", "ji", "jo", "ju", "ka", "ke", "ki", "ko", "ku",
-    "la", "le", "li", "lo", "lu", "ma", "me", "mi", "mo", "mu",
-    "na", "ne", "ni", "no", "nu", "pa", "pe", "pi", "po", "pu",
-    "ra", "re", "ri", "ro", "ru", "sa", "se", "si", "so", "su",
-    "ta", "te", "ti", "to", "tu", "va", "ve", "vi", "vo", "vu",
-    "wa", "we", "wi", "wo", "wu", "ya", "ye", "yi", "yo", "yu",
-    "za", "ze", "zi", "zo", "zu",
-    # Common English endings
-    "ing", "tion", "ly", "ful", "less", "ness", "ment", "able", "ible",
-    # Double consonants with vowels
-    "ble", "ple", "tle", "dle", "gle", "cle", "fle"
+# Step 3: Define English prefixes and suffixes that work well with proper nouns
+# Filtered to avoid awkward combinations and focus on natural-sounding word formation
+prefixes = [
+    "pre", "pro", "de", "re", "un", "ex", "sub", "over",
+    "auto", "co", "inter", "mini", "multi", "post", "semi", "super"
 ]
+
+suffixes = [
+    "ing", "ly", "ful", "less", "ment", "able", "ed", "er", 
+    "ous", "ive", "ize", "age", "dom", "ship"
+]
+
+# Filter proper nouns for better word formation (shorter, more suitable)
+suitable_proper_nouns = [noun for noun in proper_nouns if 3 <= len(noun) <= 8]
+print(f"Using {len(suitable_proper_nouns)} suitable proper nouns (3-8 letters) for pseudo-word generation")
 
 # Step 4: Combine all word types and generate remaining pseudo-words if needed
 target_size = 1_040_000
 all_words = set(real_words) | compound_words
 
 def generate_pseudo_word():
-    """Generate a pseudo-word by combining 2-3 pronounceable syllables"""
-    num_syllables = random.choice([2, 3])  # Shorter words are more natural
-    return ''.join(random.choices(syllables, k=num_syllables))
+    """Generate a pseudo-word using English word patterns: prefix + proper noun + suffix"""
+    # Generate different patterns
+    pattern = random.choice([1, 2, 3])
+    
+    if pattern == 1:  # prefix + proper noun
+        prefix = random.choice(prefixes)
+        noun = random.choice(suitable_proper_nouns)
+        word = prefix + noun
+        # Avoid awkward double letters at junction
+        if not (prefix.endswith(noun[0]) and len(noun) > 1):
+            return word
+        else:
+            return prefix + noun[1:]  # Skip first letter to avoid double
+            
+    elif pattern == 2:  # proper noun + suffix  
+        noun = random.choice(suitable_proper_nouns)
+        suffix = random.choice(suffixes)
+        word = noun + suffix
+        # Avoid awkward double letters at junction
+        if not (noun.endswith(suffix[0]) and len(suffix) > 1):
+            return word
+        else:
+            return noun[:-1] + suffix  # Remove last letter to avoid double
+            
+    else:  # prefix + proper noun + suffix
+        prefix = random.choice(prefixes)
+        noun = random.choice(suitable_proper_nouns)
+        suffix = random.choice(suffixes)
+        
+        # Handle potential double letters
+        if prefix.endswith(noun[0]):
+            noun = noun[1:]
+        if noun.endswith(suffix[0]):
+            noun = noun[:-1]
+            
+        return prefix + noun + suffix
 
 print(f"Starting with {len(real_words)} real words + {len(compound_words)} compound words = {len(all_words)} total")
 print(f"Need {target_size - len(all_words)} more pseudo-words to reach target...")
