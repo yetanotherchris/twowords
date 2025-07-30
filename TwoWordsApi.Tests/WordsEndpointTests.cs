@@ -23,7 +23,7 @@ public class WordsEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         var json = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(json);
         Assert.Equal("a", doc.RootElement.GetProperty("latitudeWord").GetString());
-        Assert.Equal("buzesi", doc.RootElement.GetProperty("longitudeWord").GetString());
+        Assert.Equal("a", doc.RootElement.GetProperty("longitudeWord").GetString());
     }
 
     [Fact]

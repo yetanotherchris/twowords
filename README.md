@@ -37,8 +37,8 @@ The response will look like:
 
 Word data is loaded from the `expanded_words.zip` archive at the repository
 root.  This file contains over a million entries.  On startup the service
-unpacks the text file and splits it into two lists &ndash; one for latitude and
-one for longitude &ndash; which provides enough coverage for the entire UK at a
+unpacks the text file into a single list which is used for both latitude and
+longitude indices.  The list is large enough to cover the entire UK at a
 10&nbsp;m grid resolution.
 
 ## Deterministic mapping
