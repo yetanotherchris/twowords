@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TwoWordsApi\TwoWordsApi.csproj" />
+    <ProjectReference Include="..\..\src\TwoWordsApi\TwoWordsApi.csproj" />
   </ItemGroup>
 
 </Project>

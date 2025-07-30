@@ -2,9 +2,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwoWordsApi", "TwoWordsApi\TwoWordsApi.csproj", "{66C7F7C7-750A-FB0B-BA92-08A3E68A017E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwoWordsApi", "src\TwoWordsApi\TwoWordsApi.csproj", "{66C7F7C7-750A-FB0B-BA92-08A3E68A017E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwoWordsApi.Tests", "TwoWordsApi.Tests\TwoWordsApi.Tests.csproj", "{808EE3D8-95F3-8972-5359-A4EA87876768}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwoWordsApi.Tests", "tests\TwoWordsApi.Tests\TwoWordsApi.Tests.csproj", "{808EE3D8-95F3-8972-5359-A4EA87876768}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
