@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,14 +12,16 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "TwoWords API v1");
+    });
 }
 
-// Load dictionaries. The expanded word list is stored as a zip archive at
-// the repository root. To keep the repository size small we unzip it at
-// startup and load all words into a single array. The same list is used for
-// both latitude and longitude indices.
+
 var zipPath = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath,
     "..", "expanded_words.zip"));
+
 string[] allWords;
 using (var zip = ZipFile.OpenRead(zipPath))
 using (var stream = zip.Entries.First().Open())
@@ -47,6 +50,16 @@ int lonCount = (int)Math.Ceiling((lonMax - lonMin) / step) + 1;
 // it is large enough to cover the larger of the two ranges.
 if (allWords.Length < Math.Max(latCount, lonCount))
     throw new Exception("Word list is not large enough for coverage.");
+
+app.MapGet("/stats", () =>
+{
+    var stats = $"Total words: {allWords.Length}\n" +
+                $"Latitude range: {latMin} to {latMax}\n" +
+                $"Longitude range: {lonMin} to {lonMax}\n" +
+                $"Step (precision): {step}\n";
+
+    return Results.Text(stats);
+});
 
 app.MapGet("/words", (double lat, double lon) =>
 {
