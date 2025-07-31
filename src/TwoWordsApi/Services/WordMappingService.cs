@@ -18,24 +18,24 @@ public class WordMappingService : IWordMappingService
 
     public WordMappingService(IWebHostEnvironment environment)
     {
-        // Determine the correct path for geo_validated_words.zip
+        // Determine the correct path for expanded_words.zip
         string zipPath;
         var isInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 
         if (isInContainer)
         {
-            zipPath = "/geo_validated_words.zip";
+            zipPath = "/expanded_words.zip";
         }
         else
         {
             zipPath = Path.GetFullPath(Path.Combine(environment.ContentRootPath,
-                "..", "..", "geo_validated_words.zip"));
+                "..", "..", "expanded_words.zip"));
         }
 
         // Verify the file exists
         if (!File.Exists(zipPath))
         {
-            throw new FileNotFoundException($"geo_validated_words.zip not found at {zipPath}. " +
+            throw new FileNotFoundException($"expanded_words.zip not found at {zipPath}. " +
                 $"ContentRootPath: {environment.ContentRootPath}, " +
                 $"IsInContainer: {isInContainer}");
         }
@@ -73,11 +73,31 @@ public class WordMappingService : IWordMappingService
 
     public bool IsValidCoordinate(int latIndex, int lonIndex)
     {
-        // Check if either latitude or longitude word is marked as invalid
+        // Since we're using expanded_words.zip, we can do basic geographic validation
+        // Convert indices back to coordinates for validation
+        var lat = LatMin + (latIndex * Step);
+        var lon = LonMin + (lonIndex * Step);
+        
+        // Check if either index is out of range
         if (latIndex >= _allWords.Length || lonIndex >= _allWords.Length)
             return false;
+        
+        // Basic geographic validation for UK/Ireland region
+        // Exclude obvious water areas (simplified validation)
+        
+        // Irish Sea (rough boundaries)
+        if (lat >= 53.0 && lat <= 55.0 && lon >= -6.0 && lon <= -3.0)
+            return false;
             
-        return _allWords[latIndex] != "INVALID" && _allWords[lonIndex] != "INVALID";
+        // English Channel (rough boundaries)  
+        if (lat >= 49.0 && lat <= 51.0 && lon >= -2.0 && lon <= 2.0)
+            return false;
+            
+        // North Sea (rough boundaries)
+        if (lat >= 54.0 && lat <= 60.0 && lon >= 0.0 && lon <= 2.0)
+            return false;
+        
+        return true;
     }
 
     public int FindWordIndex(string word)

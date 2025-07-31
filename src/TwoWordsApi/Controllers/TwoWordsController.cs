@@ -179,36 +179,20 @@ public class TwoWordsController : ControllerBase
         // Process cities
         foreach (var city in cities)
         {
-            if (city.Lat >= _wordMappingService.LatMin && city.Lat <= _wordMappingService.LatMax && 
-                city.Lon >= _wordMappingService.LonMin && city.Lon <= _wordMappingService.LonMax)
+            var wordsResult = GetWords(city.Lat, city.Lon);
+            if (wordsResult is OkObjectResult okResult)
             {
-                var latIndex = (int)Math.Floor((city.Lat - _wordMappingService.LatMin) / _wordMappingService.Step);
-                var lonIndex = (int)Math.Floor((city.Lon - _wordMappingService.LonMin) / _wordMappingService.Step);
-
-                if (latIndex < _wordMappingService.LatCount && lonIndex < _wordMappingService.LonCount)
-                {
-                    var latWord = _wordMappingService.GetWordAtIndex(latIndex);
-                    var lonWord = _wordMappingService.GetWordAtIndex(lonIndex);
-                    examples.Add($"{city.Name} - {latWord}.{lonWord} ({city.Lon}, {city.Lat})");
-                }
+                examples.Add($"{city.Name} - {okResult.Value} ({city.Lon}, {city.Lat})");
             }
         }
 
         // Process landmarks
         foreach (var landmark in landmarks)
         {
-            if (landmark.Lat >= _wordMappingService.LatMin && landmark.Lat <= _wordMappingService.LatMax && 
-                landmark.Lon >= _wordMappingService.LonMin && landmark.Lon <= _wordMappingService.LonMax)
+            var wordsResult = GetWords(landmark.Lat, landmark.Lon);
+            if (wordsResult is OkObjectResult okResult)
             {
-                var latIndex = (int)Math.Floor((landmark.Lat - _wordMappingService.LatMin) / _wordMappingService.Step);
-                var lonIndex = (int)Math.Floor((landmark.Lon - _wordMappingService.LonMin) / _wordMappingService.Step);
-
-                if (latIndex < _wordMappingService.LatCount && lonIndex < _wordMappingService.LonCount)
-                {
-                    var latWord = _wordMappingService.GetWordAtIndex(latIndex);
-                    var lonWord = _wordMappingService.GetWordAtIndex(lonIndex);
-                    examples.Add($"{landmark.Name} - {latWord} {lonWord} ({landmark.Lon}, {landmark.Lat})");
-                }
+                examples.Add($"{landmark.Name} - {okResult.Value} ({landmark.Lon}, {landmark.Lat})");
             }
         }
 
