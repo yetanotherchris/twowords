@@ -73,12 +73,21 @@ def lon_intersects(poly, lon):
 def main():
     poly = load_polygon()
     max_count = max(LAT_COUNT, LON_COUNT)
-    # Load optimized words from optimize_words.py output
-    optimized_words_path = os.path.join(SCRIPT_DIR, "optimized_words.txt")
-    if not os.path.exists(optimized_words_path):
-        # Fallback to word-data/optimized_words.txt
-        optimized_words_path = os.path.join(WORD_DIR, "optimized_words.txt")
-    with open(optimized_words_path, "r", encoding="utf-8") as f:
+    # Load optimized words, preferring the sorted list produced by score_words.py
+    sorted_words_path = os.path.join(SCRIPT_DIR, "optimized_words_sorted.txt")
+    if not os.path.exists(sorted_words_path):
+        sorted_words_path = os.path.join(WORD_DIR, "optimized_words_sorted.txt")
+
+    if os.path.exists(sorted_words_path):
+        words_file = sorted_words_path
+    else:
+        words_file = os.path.join(SCRIPT_DIR, "optimized_words.txt")
+        if not os.path.exists(words_file):
+            # Fallback to word-data/optimized_words.txt
+            words_file = os.path.join(WORD_DIR, "optimized_words.txt")
+
+    print(f"Loading base words from {words_file}...")
+    with open(words_file, "r", encoding="utf-8") as f:
         base_words = [line.strip() for line in f if line.strip()]
 
     results = []

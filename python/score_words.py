@@ -1,4 +1,3 @@
-@ -1,461 +0,0 @@
 #!/usr/bin/env python3
 """
 Optimize word list to place the best words at high-population indices.
@@ -457,6 +456,17 @@ def main():
     print(f"  Short words (≤4 chars): {sum(1 for l in lengths if l <= 4)}")
     print(f"  Medium words (5-7 chars): {sum(1 for l in lengths if 5 <= l <= 7)}")
     print(f"  Long words (8+ chars): {sum(1 for l in lengths if l >= 8)}")
+
+    # Additionally save a version of the list sorted by score using only valid words
+    valid_scored = [
+        calculate_word_score(w, food_set)
+        for w in optimized_words
+        if is_valid_english_word(w)
+    ]
+    valid_scored.sort(key=lambda ws: ws.score, reverse=True)
+    sorted_output_file = 'optimized_words_sorted.txt'
+    save_optimized_words([ws.word for ws in valid_scored], sorted_output_file)
+    print(f"Saved sorted word list to {sorted_output_file}")
 
 if __name__ == "__main__":
     main()
