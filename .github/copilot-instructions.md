@@ -17,6 +17,16 @@ TwoWords is a deterministic coordinate-to-word mapping service for the UK, simil
 - **Population mapping**: Indices 18224, 25073, 44808, etc. get memorable words like "pho", "basil", "kebab"
 - **Land validation**: Built-in geographic filters exclude seas, mountains, remote areas
 
+### Word List Source Information
+- **Original source**: dwyl/english-words GitHub repository
+- **URL**: https://github.com/dwyl/english-words
+- **Download location**: `word-data/` folder (keeps all word files organized)
+- **Final consolidated file**: `word-data/words_final.txt` (416,296 words)
+- **Downloaded from**: https://raw.githubusercontent.com/dwyl/english-words/master/words.txt
+- **Filtered with PowerShell**: `Get-Content word-data/words_comprehensive.txt | Where-Object { $_ -match "^[a-zA-Z]+$" }`
+- **Removed 50,254 words** containing numbers, punctuation, or special characters
+- **Preserves modern terms** (USB, email, internet, covid) and proper names (Deborah)
+
 ### API Structure (`src/TwoWordsApi/Program.cs`)
 ```csharp
 // Core endpoints
