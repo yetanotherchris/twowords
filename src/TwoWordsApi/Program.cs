@@ -151,6 +151,67 @@ app.MapGet("/validate", (double lat, double lon) =>
     });
 });
 
+app.MapGet("/coordinates", (string words, string? format = "lat,lon") =>
+{
+    // Parse the input format "word1.word2"
+    var wordParts = words.Split('.');
+    if (wordParts.Length != 2)
+    {
+        return Results.BadRequest("Words must be in format 'word1.word2'");
+    }
+
+    var latitudeWord = wordParts[0].Trim().ToLower();
+    var longitudeWord = wordParts[1].Trim().ToLower();
+
+    // Find the indices of the words in the array
+    var latIndex = Array.FindIndex(allWords, w => w.ToLower() == latitudeWord);
+    var lonIndex = Array.FindIndex(allWords, w => w.ToLower() == longitudeWord);
+
+    if (latIndex == -1)
+    {
+        return Results.BadRequest($"Latitude word '{wordParts[0]}' not found in word list");
+    }
+
+    if (lonIndex == -1)
+    {
+        return Results.BadRequest($"Longitude word '{wordParts[1]}' not found in word list");
+    }
+
+    // Check if indices are within valid coordinate range
+    if (latIndex >= latCount)
+    {
+        return Results.BadRequest($"Latitude word '{wordParts[0]}' corresponds to coordinates outside the supported range");
+    }
+
+    if (lonIndex >= lonCount)
+    {
+        return Results.BadRequest($"Longitude word '{wordParts[1]}' corresponds to coordinates outside the supported range");
+    }
+
+    // Convert indices back to coordinates
+    var lat = latMin + (latIndex * step);
+    var lon = lonMin + (lonIndex * step);
+
+    // Validate that the coordinates are likely land
+    if (!IsLikelyLand(lat, lon))
+    {
+        return Results.BadRequest("The coordinates for these words appear to be over water or inaccessible terrain");
+    }
+
+    // Format response based on the format parameter
+    string response;
+    if (format?.ToLower() == "lon,lat")
+    {
+        response = $"{lon:F4}, {lat:F4}";
+    }
+    else
+    {
+        response = $"{lat:F4}, {lon:F4}";
+    }
+
+    return Results.Text(response);
+});
+
 app.MapGet("/examples", () =>
 {
     var examples = new List<string>();

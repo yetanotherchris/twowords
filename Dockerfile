@@ -15,8 +15,9 @@ COPY ["tests/TwoWordsApi.Tests/TwoWordsApi.Tests.csproj", "tests/TwoWordsApi.Tes
 COPY ["twowords.sln", "."]
 RUN dotnet restore "src/TwoWordsApi/TwoWordsApi.csproj"
 
-# Copy the entire source code
+# Copy the entire source code including the zip file
 COPY . .
+
 WORKDIR "/src/src/TwoWordsApi"
 RUN dotnet build "TwoWordsApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
 

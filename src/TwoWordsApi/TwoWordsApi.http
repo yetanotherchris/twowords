@@ -1,6 +1,37 @@
-@TwoWordsApi_HostAddress = http://localhost:5119
+@TwoWordsApi_HostAddress = http://localhost:5000
 
-GET {{TwoWordsApi_HostAddress}}/weatherforecast/
+# Get word pair for coordinates (London)
+GET {{TwoWordsApi_HostAddress}}/words?lat=51.5074&lon=-0.1278
+Accept: text/plain
+
+###
+
+# Get coordinates from word pair (default lat,lon format)
+GET {{TwoWordsApi_HostAddress}}/coordinates?words=adobo.arugula
+Accept: text/plain
+
+###
+
+# Get coordinates from word pair (lon,lat format)
+GET {{TwoWordsApi_HostAddress}}/coordinates?words=adobo.arugula&format=lon,lat
+Accept: text/plain
+
+###
+
+# Validate coordinates
+GET {{TwoWordsApi_HostAddress}}/validate?lat=51.5074&lon=-0.1278
 Accept: application/json
+
+###
+
+# Get examples
+GET {{TwoWordsApi_HostAddress}}/examples
+Accept: application/json
+
+###
+
+# Get stats
+GET {{TwoWordsApi_HostAddress}}/stats
+Accept: text/plain
 
 ###
