@@ -26,8 +26,29 @@ if (app.Environment.IsDevelopment())
 }
 
 
-var zipPath = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath,
-    "..", "..", "expanded_words.zip"));
+// Determine the correct path for expanded_words.zip
+// In container: /expanded_words.zip (copied to root)
+// Local development: ../../expanded_words.zip (relative to ContentRootPath)
+string zipPath;
+var isInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+
+if (isInContainer)
+{
+    zipPath = "/expanded_words.zip";
+}
+else
+{
+    zipPath = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath,
+        "..", "..", "expanded_words.zip"));
+}
+
+// Verify the file exists
+if (!File.Exists(zipPath))
+{
+    throw new FileNotFoundException($"expanded_words.zip not found at {zipPath}. " +
+        $"ContentRootPath: {app.Environment.ContentRootPath}, " +
+        $"IsInContainer: {isInContainer}");
+}
 
 string[] allWords;
 using (var zip = ZipFile.OpenRead(zipPath))
