@@ -35,7 +35,7 @@ COPY --from=publish /app/publish .
 # Copy the expanded_words.zip file to maintain the expected directory structure
 # The API expects the zip file to be at "../../expanded_words.zip" relative to ContentRootPath
 # ContentRootPath will be /app, so we need the zip at the root /
-COPY ["expanded_words.zip", "/expanded_words.zip"]
+COPY --from=build /src/expanded_words.zip /expanded_words.zip
 
 # Set environment variables
 ENV ASPNETCORE_URLS=http://+:8080
