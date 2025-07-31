@@ -26,13 +26,132 @@ class WordScore:
     is_common: bool
     is_simple: bool
 
+def is_valid_english_word(word: str) -> bool:
+    """Check if word looks like a proper English word."""
+    # Must have vowels (except very short common words)
+    if len(word) > 2 and not any(c in word for c in 'aeiou'):
+        return False
+    
+    # Reject obvious abbreviations
+    if len(word) <= 4 and word.isupper():
+        return False
+    
+    # Reject words with too many consonants in a row
+    consonant_count = 0
+    for char in word:
+        if char not in 'aeiou':
+            consonant_count += 1
+            if consonant_count > 3:  # No more than 3 consonants in a row
+                return False
+        else:
+            consonant_count = 0
+    
+    # Reject words with unusual letter combinations
+    bad_patterns = ['qq', 'zz', 'xx', 'bv', 'cj', 'cv', 'cw', 'dx', 'fq', 'fx', 'gq', 'gx', 'hx', 'jf', 'jg', 'jq', 'jv', 'jw', 'jx', 'jz', 'kq', 'kx', 'mx', 'px', 'qc', 'qf', 'qg', 'qh', 'qj', 'qk', 'ql', 'qm', 'qn', 'qp', 'qr', 'qs', 'qt', 'qv', 'qw', 'qx', 'qy', 'qz', 'sx', 'vb', 'vf', 'vh', 'vj', 'vm', 'vp', 'vq', 'vt', 'vw', 'vx', 'wq', 'wx', 'xf', 'xj', 'xk', 'xm', 'xp', 'xq', 'xv', 'xw', 'xz', 'zx']
+    for pattern in bad_patterns:
+        if pattern in word:
+            return False
+    
+    # Reject single letters except common ones
+    if len(word) == 1 and word not in ['a', 'i']:
+        return False
+    
+    # Reject very short words that look like abbreviations
+    if len(word) <= 3 and any(char.isupper() for char in word):
+        return False
+    
+    # Must end with a vowel or common consonant ending
+    if len(word) > 3 and word[-1] not in 'aeiouynslrdtmh':
+        return False
+    
+    return True
+
 def load_words_from_zip(zip_path: str) -> List[str]:
-    """Load words from the expanded_words.zip file."""
-    with zipfile.ZipFile(zip_path, 'r') as zip_file:
-        with zip_file.open('expanded_words.txt') as f:
-            lines = f.read().decode('utf-8').strip().split('\n')
-            words = [line.strip().lower() for line in lines if line.strip()]
-    return words
+    """Load words from curated English word lists in word-data directory."""
+    
+    # Try to load from Peter Norvig's curated English word list (highest quality)
+    word_data_dir = '../word-data/'
+    norvig_file = word_data_dir + 'norvig-word-list.txt'
+    try:
+        with open(norvig_file, 'r', encoding='utf-8') as f:
+            norvig_words = [line.strip().lower() for line in f if line.strip()]
+        
+        # Apply basic filtering to Norvig's already-clean list
+        filtered_words = []
+        for word in norvig_words:
+            # Keep words in a reasonable range for memorability
+            if len(word) < 2 or len(word) > 10:
+                continue
+            
+            # Basic validation (Norvig's list should already be clean)
+            if not is_valid_english_word(word):
+                continue
+                
+            filtered_words.append(word)
+        
+        print(f"Loaded {len(filtered_words):,} quality English words from Norvig's curated list")
+        return filtered_words
+        
+    except FileNotFoundError:
+        print(f"Norvig word list not found: {norvig_file}")
+        print("Falling back to zip file...")
+    
+    # Fallback to zip file
+    try:
+        with zipfile.ZipFile(zip_path, 'r') as zip_file:
+            # Look for the first text file in the zip
+            text_files = [f for f in zip_file.namelist() if f.endswith('.txt')]
+            if not text_files:
+                raise FileNotFoundError("No text files found in zip")
+            
+            with zip_file.open(text_files[0]) as f:
+                lines = f.read().decode('utf-8').strip().split('\n')
+                words = [line.strip().lower() for line in lines if line.strip()]
+                
+        # Apply strict filtering to zip file words
+        filtered_words = []
+        for word in words:
+            if len(word) < 2 or len(word) > 10:
+                continue
+            if not is_valid_english_word(word):
+                continue
+            if not is_clearly_english_word(word):
+                continue
+            filtered_words.append(word)
+        
+        print(f"Fallback: loaded {len(filtered_words):,} filtered words from zip file")
+        return filtered_words
+        
+    except Exception as e:
+        print(f"Error loading from zip file: {e}")
+        raise FileNotFoundError("No word sources available")
+
+def is_clearly_english_word(word: str) -> bool:
+    """Additional strict validation for clearly English words."""
+    # Must have reasonable vowel distribution
+    vowels = sum(1 for c in word if c in 'aeiou')
+    if len(word) > 3 and vowels == 0:
+        return False
+    
+    # Check for reasonable vowel ratio
+    vowel_ratio = vowels / len(word)
+    if vowel_ratio < 0.2 or vowel_ratio > 0.7:  # Between 20% and 70% vowels
+        return False
+    
+    # Reject words that look like proper names or abbreviations
+    if word[0].isupper():
+        return False
+    
+    # Reject words with repeated unusual patterns
+    if any(pattern * 2 in word for pattern in ['aa', 'ii', 'oo', 'uu']):
+        return False
+    
+    # Must not look like an abbreviation or code
+    consonant_clusters = ['bcf', 'bch', 'bdl', 'bdr', 'bgl', 'bkc', 'bkg', 'bkl', 'bkp', 'bkt', 'cpt', 'ctn', 'ctx', 'cwt', 'dbl', 'dft', 'dgr', 'dpt', 'dvt', 'frt', 'gln', 'grd', 'hwy', 'inc', 'ltd', 'mfg', 'mgr', 'pkg', 'pkt', 'plt', 'pnt', 'qty', 'rpt', 'sgt', 'spl', 'std', 'str', 'tbl', 'tmp', 'wgt']
+    if any(cluster in word for cluster in consonant_clusters):
+        return False
+    
+    return True
 
 def load_food_dishes() -> List[str]:
     """Load food dishes from the word-data directory for priority placement."""
@@ -64,27 +183,58 @@ def load_important_indices(file_path: str) -> Set[int]:
 
 def is_common_word(word: str) -> bool:
     """Check if word is a common English word."""
-    # Common word patterns and high-frequency words
+    # Expanded common word patterns and high-frequency words
     common_words = {
         'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from',
         'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the',
         'to', 'was', 'will', 'with', 'you', 'your', 'have', 'had', 'this',
         'but', 'his', 'her', 'she', 'or', 'if', 'we', 'my', 'me', 'all',
         'up', 'out', 'so', 'can', 'get', 'go', 'new', 'now', 'old', 'see',
-        'two', 'way', 'who', 'boy', 'did', 'its', 'let', 'put', 'say',
-        'she', 'too', 'use', 'big', 'car', 'cat', 'dog', 'eye', 'far',
-        'few', 'got', 'her', 'him', 'how', 'man', 'may', 'not', 'oil',
-        'one', 'our', 'own', 'run', 'sun', 'top', 'try', 'yet', 'yes'
+        'two', 'way', 'who', 'boy', 'did', 'let', 'put', 'say',
+        'too', 'use', 'big', 'car', 'cat', 'dog', 'eye', 'far',
+        'few', 'got', 'him', 'how', 'man', 'may', 'not', 'oil',
+        'one', 'our', 'own', 'run', 'sun', 'top', 'try', 'yet', 'yes',
+        'day', 'end', 'way', 'any', 'may', 'say', 'new', 'old', 'see',
+        'him', 'two', 'how', 'its', 'who', 'oil', 'sit', 'set', 'hot',
+        'lot', 'cut', 'put', 'but', 'got', 'not', 'out', 'our', 'now',
+        'low', 'few', 'new', 'too', 'you', 'use', 'run', 'sun', 'fun',
+        'red', 'bed', 'led', 'fed', 'had', 'bad', 'mad', 'sad', 'dad',
+        'add', 'all', 'call', 'ball', 'fall', 'wall', 'tall', 'small',
+        'home', 'come', 'some', 'time', 'name', 'same', 'game', 'came',
+        'take', 'make', 'wake', 'lake', 'cake', 'bake', 'sake', 'fake',
+        'like', 'bike', 'hike', 'mike', 'pike', 'life', 'wife', 'nice',
+        'rice', 'mice', 'dice', 'ice', 'face', 'race', 'pace', 'lace',
+        'place', 'space', 'grace', 'trace', 'brace', 'fire', 'tire',
+        'wire', 'hire', 'dire', 'mire', 'sure', 'pure', 'cure', 'lure',
+        'blue', 'true', 'clue', 'glue', 'due', 'sue', 'hue', 'cue',
+        'side', 'ride', 'hide', 'wide', 'tide', 'bride', 'pride', 'slide',
+        'house', 'mouse', 'about', 'water', 'after', 'first', 'never',
+        'other', 'right', 'think', 'where', 'being', 'every', 'great',
+        'might', 'still', 'small', 'found', 'those', 'never', 'under',
+        'while', 'again', 'place', 'right', 'three', 'state', 'after',
+        'good', 'well', 'much', 'very', 'when', 'here', 'work', 'year',
+        'back', 'down', 'over', 'also', 'just', 'only', 'know', 'take',
+        'look', 'give', 'most', 'hand', 'high', 'part', 'head', 'keep',
+        'help', 'turn', 'move', 'live', 'seem', 'feel', 'want', 'need',
+        'find', 'tell', 'such', 'long', 'next', 'last', 'left', 'each',
+        'both', 'many', 'more', 'than', 'same', 'them', 'what', 'does'
     }
     
     # Check if it's in our common words list
     if word in common_words:
         return True
     
-    # Common prefixes/suffixes that might indicate common words
-    common_patterns = ['ing', 'ed', 'er', 'est', 'ly', 'tion', 'sion']
-    if len(word) <= 6 and any(word.endswith(pattern) for pattern in common_patterns):
-        return True
+    # Common word patterns for slightly longer words
+    if len(word) <= 6:
+        # Common suffixes
+        common_endings = ['ing', 'ed', 'er', 'est', 'ly', 'tion', 'sion', 'ness', 'ment', 'able']
+        if any(word.endswith(ending) for ending in common_endings):
+            return True
+        
+        # Common prefixes  
+        common_starts = ['un', 're', 'pre', 'dis', 'mis', 'over', 'under', 'out']
+        if any(word.startswith(start) for start in common_starts):
+            return True
         
     return False
 

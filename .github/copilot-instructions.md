@@ -18,14 +18,14 @@ TwoWords is a deterministic coordinate-to-word mapping service for the UK, simil
 - **Land validation**: Built-in geographic filters exclude seas, mountains, remote areas
 
 ### Word List Source Information
-- **Original source**: dwyl/english-words GitHub repository
-- **URL**: https://github.com/dwyl/english-words
-- **Download location**: `word-data/` folder (keeps all word files organized)
-- **Final consolidated file**: `word-data/words_final.txt` (416,296 words)
-- **Downloaded from**: https://raw.githubusercontent.com/dwyl/english-words/master/words.txt
-- **Filtered with PowerShell**: `Get-Content word-data/words_comprehensive.txt | Where-Object { $_ -match "^[a-zA-Z]+$" }`
-- **Removed 50,254 words** containing numbers, punctuation, or special characters
-- **Preserves modern terms** (USB, email, internet, covid) and proper names (Deborah)
+- **Primary source**: Peter Norvig's curated English word list (norvig.com)
+- **URL**: https://norvig.com/ngrams/word.list
+- **Quality**: 263,533 high-quality English words, manually curated
+- **Download location**: `word-data/norvig-word-list.txt` (main curated source)
+- **Filtered to**: ~154,000 words after length and validation filtering
+- **Benefits**: No non-English words (like "devaul", "cochao"), proper dictionary words only
+- **Fallback**: Uses existing `expanded_words.zip` if Norvig list unavailable
+- **Processing**: Direct access from word-data directory, clean and simple
 
 ### API Structure (`src/TwoWordsApi/Program.cs`)
 ```csharp
@@ -52,6 +52,9 @@ cd src/TwoWordsApi && dotnet run --urls http://localhost:5000
 ```bash
 # From python/ directory - regenerate optimized word list
 python optimize_word_list.py
+
+# To redownload word sources (in word-data/ directory):
+# Invoke-WebRequest -Uri "https://norvig.com/ngrams/word.list" -OutFile "word-data/norvig-word-list.txt"
 
 # Calculate population indices for new cities  
 python calculate_popular_indices.py
@@ -82,6 +85,7 @@ The `IsLikelyLand()` function uses hardcoded geographic rules rather than extern
 
 ## Critical Files
 - `expanded_words.zip` - Optimized word list (110,001 entries)
+- `word-data/norvig-word-list.txt` - Peter Norvig's curated English words (primary source)
 - `word-data/important_indices.txt` - Population center indices for optimization
 - `word-data/food_dishes_final.txt` - 163 food terms prioritized for cities
 - `OPTIMIZATION_README.md` - Detailed optimization strategy and results
