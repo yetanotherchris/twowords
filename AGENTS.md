@@ -12,9 +12,8 @@
 
 ## Large Files
 - **Do not add large zip archives or text files to the repository.**
-  - Avoid committing new `.zip` or `.txt` files larger than **1&nbsp;MB**.
+  - Avoid committing new `.zip` or `.txt` files larger than 100 kilobytes. This will break Codex's PR requests.
   - If large data is required, host it externally and download it during tests or use a smaller sample.
-  - The file `python/word-data/uk_polygon.wkt.zip` should not be committed; download it when needed using the provided script.
 
 ## Pull Requests
 - Keep PRs focused and limit them to necessary changes.
