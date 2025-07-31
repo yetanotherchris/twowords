@@ -1,5 +1,7 @@
 using System.IO.Compression;
 
+namespace TwoWordsApi.Services;
+
 public class WordMappingService : IWordMappingService
 {
     private readonly string[] _allWords;

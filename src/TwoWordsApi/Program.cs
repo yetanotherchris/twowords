@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using TwoWordsApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

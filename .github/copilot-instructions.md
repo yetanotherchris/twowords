@@ -27,11 +27,24 @@ TwoWords is a deterministic coordinate-to-word mapping service for the UK, simil
 - **Fallback**: Uses existing `expanded_words.zip` if Norvig list unavailable
 - **Processing**: Direct access from word-data directory, clean and simple
 
-### API Structure (`src/TwoWordsApi/Program.cs`)
+### API Structure
+The API has been refactored into a clean MVC architecture:
+
+#### Controllers (`src/TwoWordsApi/Controllers/`)
+- **TwoWordsController.cs**: Main API endpoints (words, validate, coordinates, examples, stats)
+- **MapController.cs**: Interactive map visualization endpoint
+
+#### Services (`src/TwoWordsApi/Services/`)
+- **IWordMappingService.cs**: Interface for word mapping operations
+- **WordMappingService.cs**: Core service handling word list loading and coordinate mapping
+- **Dependency Injection**: Service registered as singleton in Program.cs for immediate initialization
+
+#### Core Endpoints
 ```csharp
-// Core endpoints
 GET /words?lat=51.5&lon=-0.12     // Main mapping endpoint
 GET /validate?lat=51.5&lon=-0.12  // Land validation
+GET /coordinates?words=word1.word2 // Reverse mapping
+GET /map?words=word1.word2        // Interactive map view
 GET /examples                     // Sample cities/landmarks
 GET /stats                        // System info
 ```
@@ -40,12 +53,19 @@ GET /stats                        // System info
 
 ### Build & Test
 ```bash
-# Standard .NET build from root
+# Standard .NET build from root directory
 dotnet build twowords.sln -c Release
 dotnet test tests/TwoWordsApi.Tests/TwoWordsApi.Tests.csproj
 
-# Run API locally
-cd src/TwoWordsApi && dotnet run --urls http://localhost:5000
+# Run API locally - IMPORTANT: Must run from src/TwoWordsApi directory
+cd src/TwoWordsApi
+dotnet run --urls http://localhost:5000
+
+# Alternative: Run from root directory with project path
+dotnet run --project src/TwoWordsApi/TwoWordsApi.csproj --urls http://localhost:5000
+
+# COMMON MISTAKE: Do NOT run 'dotnet run' from root directory without specifying project
+# This will fail with "Couldn't find a project to run"
 ```
 
 ### Word List Optimization

@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using TwoWordsApi.Services;
+
+namespace TwoWordsApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

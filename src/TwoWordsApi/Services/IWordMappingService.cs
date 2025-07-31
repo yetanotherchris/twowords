@@ -1,3 +1,5 @@
+namespace TwoWordsApi.Services;
+
 public interface IWordMappingService
 {
     /// <summary>
