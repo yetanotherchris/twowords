@@ -69,87 +69,36 @@ def create_simple_word_list():
     """Create a simple word list that ensures London works."""
     words = load_word_list()
     print(f"Loaded {len(words)} words")
-    
-    # Calculate London's indices
-    london_lat, london_lon = 51.5074, -0.1278
-    london_lat_idx = int(math.floor((london_lat - LAT_MIN) / STEP))
-    london_lon_idx = int(math.floor((london_lon - LON_MIN) / STEP))
-    
-    print(f"London indices: lat={london_lat_idx}, lon={london_lon_idx}")
-    
-    # Create base word list filled with INVALID
+
     word_list = ["INVALID"] * WORDS_NEEDED
-    
-    # Set specific indices to valid words for testing
     word_idx = 0
-    
-    # Ensure London indices have valid words
-    if london_lat_idx < WORDS_NEEDED:
-        word_list[london_lat_idx] = words[word_idx % len(words)]
-        word_idx += 1
-        print(f"Assigned '{word_list[london_lat_idx]}' to London lat index {london_lat_idx}")
-    
-    if london_lon_idx < WORDS_NEEDED:
-        word_list[london_lon_idx] = words[word_idx % len(words)]
-        word_idx += 1
-        print(f"Assigned '{word_list[london_lon_idx]}' to London lon index {london_lon_idx}")
-    
-    # Test other major cities
-    test_cities = [
-        ("Manchester", 53.4808, -2.2426),
-        ("Birmingham", 52.4862, -1.8904),
-        ("Leeds", 53.8008, -1.5491),
-        ("Liverpool", 53.4084, -2.9916),
-        ("Bristol", 51.4545, -2.5879),
-    ]
-    
-    for city_name, lat, lon in test_cities:
-        lat_idx = int(math.floor((lat - LAT_MIN) / STEP))
-        lon_idx = int(math.floor((lon - LON_MIN) / STEP))
-        
-        if is_valid_uk_land(lat, lon):
-            if lat_idx < WORDS_NEEDED and word_list[lat_idx] == "INVALID":
-                word_list[lat_idx] = words[word_idx % len(words)]
-                word_idx += 1
-                print(f"{city_name} lat index {lat_idx}: {word_list[lat_idx]}")
-            
-            if lon_idx < WORDS_NEEDED and word_list[lon_idx] == "INVALID":
-                word_list[lon_idx] = words[word_idx % len(words)]
-                word_idx += 1
-                print(f"{city_name} lon index {lon_idx}: {word_list[lon_idx]}")
-    
-    # Fill in more valid UK coordinates
-    print("Filling additional UK coordinates...")
-    for i in range(0, WORDS_NEEDED, 1000):  # Sample every 1000th index
-        # Convert index back to coordinates (this is approximate)
+
+    for i in range(WORDS_NEEDED):
+        # Compute lat/lon for this index (lat for i, lon for i)
         lat = LAT_MIN + i * STEP
         lon = LON_MIN + i * STEP
-        
-        if is_valid_uk_land(lat, lon) and word_list[i] == "INVALID":
-            word_list[i] = words[word_idx % len(words)]
-            word_idx += 1
-            if word_idx % 100 == 0:
-                print(f"Assigned {word_idx} words so far...")
-    
-    # Test the Celtic Sea coordinates that were problematic
-    celtic_lat, celtic_lon = 51.0, -6.0
-    celtic_lat_idx = int(math.floor((celtic_lat - LAT_MIN) / STEP))
-    celtic_lon_idx = int(math.floor((celtic_lon - LON_MIN) / STEP))
-    
-    print(f"Celtic Sea test - lat_idx={celtic_lat_idx} ({word_list[celtic_lat_idx]}), lon_idx={celtic_lon_idx} ({word_list[celtic_lon_idx]})")
-    print(f"Should be invalid: {not is_valid_uk_land(celtic_lat, celtic_lon)}")
-    
-    # Count results
+
+        # Assign word to valid land cells only
+        if is_valid_uk_land(lat, lon):
+            if word_idx < len(words):
+                word_list[i] = words[word_idx]
+                word_idx += 1
+            else:
+                # If we run out of words, cycle (should not happen with correct list)
+                word_list[i] = words[word_idx % len(words)]
+                word_idx += 1
+        # else: leave as 'INVALID'
+
+    print(f"Assigned {word_idx} words to valid UK land indices.")
     valid_count = sum(1 for w in word_list if w != "INVALID")
     print(f"Final result: {valid_count:,} valid words, {WORDS_NEEDED - valid_count:,} invalid positions")
-    
     return word_list
 
 def save_word_list(words):
     """Save the word list."""
-    with zipfile.ZipFile('geo_validated_words.zip', 'w', zipfile.ZIP_DEFLATED) as zf:
-        zf.writestr('geo_validated_words.txt', '\n'.join(words))
-    print("Saved to geo_validated_words.zip")
+    with zipfile.ZipFile('../expanded_words.zip', 'w', zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr('expanded_words.txt', '\n'.join(words))
+    print("Saved to ../expanded_words.zip")
 
 if __name__ == "__main__":
     print("Creating simple fixed word list...")
