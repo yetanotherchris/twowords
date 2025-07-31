@@ -7,6 +7,32 @@ namespace TwoWordsApi.Controllers;
 [Route("api/[controller]")]
 public class TwoWordsController : ControllerBase
 {
+    // Shared logic for mapping coordinates to words (returns null if invalid)
+    private string? MapCoordinatesToWords(double lat, double lon)
+    {
+        if (lat < _wordMappingService.LatMin || lat > _wordMappingService.LatMax ||
+            lon < _wordMappingService.LonMin || lon > _wordMappingService.LonMax)
+        {
+            return null;
+        }
+
+        var latIndex = (int)Math.Floor((lat - _wordMappingService.LatMin) / _wordMappingService.Step);
+        var lonIndex = (int)Math.Floor((lon - _wordMappingService.LonMin) / _wordMappingService.Step);
+
+        if (latIndex >= _wordMappingService.LatCount || lonIndex >= _wordMappingService.LonCount)
+        {
+            return null;
+        }
+
+        if (!_wordMappingService.IsValidCoordinate(latIndex, lonIndex))
+        {
+            return null;
+        }
+
+        var latitudeWord = _wordMappingService.GetWordAtIndex(latIndex);
+        var longitudeWord = _wordMappingService.GetWordAtIndex(lonIndex);
+        return $"{latitudeWord}.{longitudeWord}";
+    }
     private readonly IWordMappingService _wordMappingService;
 
     public TwoWordsController(IWordMappingService wordMappingService)
@@ -33,30 +59,21 @@ public class TwoWordsController : ControllerBase
         [FromQuery] double lat, 
         [FromQuery] double lon)
     {
-        if (lat < _wordMappingService.LatMin || lat > _wordMappingService.LatMax || 
-            lon < _wordMappingService.LonMin || lon > _wordMappingService.LonMax)
+        var words = MapCoordinatesToWords(lat, lon);
+        if (words == null)
         {
-            return BadRequest("Coordinates out of range");
-        }
+            // Determine specific error
+            if (lat < _wordMappingService.LatMin || lat > _wordMappingService.LatMax ||
+                lon < _wordMappingService.LonMin || lon > _wordMappingService.LonMax)
+                return BadRequest("Coordinates out of range");
 
-        var latIndex = (int)Math.Floor((lat - _wordMappingService.LatMin) / _wordMappingService.Step);
-        var lonIndex = (int)Math.Floor((lon - _wordMappingService.LonMin) / _wordMappingService.Step);
-
-        if (latIndex >= _wordMappingService.LatCount || lonIndex >= _wordMappingService.LonCount)
-        {
-            return BadRequest("Word list is too small for these coordinates");
-        }
-
-        // Check if coordinates are valid using pre-computed validation
-        if (!_wordMappingService.IsValidCoordinate(latIndex, lonIndex))
-        {
+            var latIndex = (int)Math.Floor((lat - _wordMappingService.LatMin) / _wordMappingService.Step);
+            var lonIndex = (int)Math.Floor((lon - _wordMappingService.LonMin) / _wordMappingService.Step);
+            if (latIndex >= _wordMappingService.LatCount || lonIndex >= _wordMappingService.LonCount)
+                return BadRequest("Word list is too small for these coordinates");
             return BadRequest("Coordinates appear to be over water or inaccessible terrain");
         }
-
-        var latitudeWord = _wordMappingService.GetWordAtIndex(latIndex);
-        var longitudeWord = _wordMappingService.GetWordAtIndex(lonIndex);
-
-        return Ok($"{latitudeWord}.{longitudeWord}");
+        return Ok(words);
     }
 
     [HttpGet("/validate")]
@@ -179,21 +196,15 @@ public class TwoWordsController : ControllerBase
         // Process cities
         foreach (var city in cities)
         {
-            var wordsResult = GetWords(city.Lat, city.Lon);
-            if (wordsResult is OkObjectResult okResult)
-            {
-                examples.Add($"{city.Name} - {okResult.Value} ({city.Lon}, {city.Lat})");
-            }
+            var words = MapCoordinatesToWords(city.Lat, city.Lon) ?? "INVALID";
+            examples.Add($"{city.Name} - {words} ({city.Lon}, {city.Lat})");
         }
 
         // Process landmarks
         foreach (var landmark in landmarks)
         {
-            var wordsResult = GetWords(landmark.Lat, landmark.Lon);
-            if (wordsResult is OkObjectResult okResult)
-            {
-                examples.Add($"{landmark.Name} - {okResult.Value} ({landmark.Lon}, {landmark.Lat})");
-            }
+            var words = MapCoordinatesToWords(landmark.Lat, landmark.Lon) ?? "INVALID";
+            examples.Add($"{landmark.Name} - {words} ({landmark.Lon}, {landmark.Lat})");
         }
 
         return Ok(examples);
