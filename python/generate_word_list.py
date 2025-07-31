@@ -1,7 +1,9 @@
 import os
+import json
 import zipfile
+import urllib.request
 from shapely import wkt
-from shapely.geometry import LineString
+from shapely.geometry import LineString, shape
 
 # Coordinate settings (match the C# service)
 LAT_MIN = 49.0
@@ -16,14 +18,35 @@ INVALID_LAT = "INVALID_LAT"
 INVALID_LON = "INVALID_LON"
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WORD_FILE = os.path.join(ROOT, "word-data", "norvig-word-list.txt")
-POLY_WKT = os.path.join(ROOT, "word-data", "uk_polygon.wkt")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+WORD_DIR = os.path.join(SCRIPT_DIR, "word-data")
+WORD_FILE = os.path.join(WORD_DIR, "norvig-word-list.txt")
+POLY_WKT_ZIP = os.path.join(WORD_DIR, "uk_polygon.wkt.zip")
+POLY_WKT_URL = "https://raw.githubusercontent.com/johan/world.geo.json/master/countries/GBR.geo.json"
 OUTPUT_ZIP = os.path.join(ROOT, "expanded_words.zip")
 
 
+def download_polygon():
+    """Download UK polygon GeoJSON and save as zipped WKT."""
+    with urllib.request.urlopen(POLY_WKT_URL) as resp:
+        geojson = json.load(resp)
+    geometry = shape(geojson["features"][0]["geometry"])
+    wkt_str = geometry.wkt
+    os.makedirs(WORD_DIR, exist_ok=True)
+    with zipfile.ZipFile(POLY_WKT_ZIP, "w", compression=zipfile.ZIP_DEFLATED) as z:
+        z.writestr("uk_polygon.wkt", wkt_str)
+
+
+def ensure_polygon():
+    if not os.path.exists(POLY_WKT_ZIP):
+        download_polygon()
+
+
 def load_polygon():
-    with open(POLY_WKT, "r", encoding="utf-8") as f:
-        data = f.read()
+    ensure_polygon()
+    with zipfile.ZipFile(POLY_WKT_ZIP, "r") as z:
+        with z.open("uk_polygon.wkt") as f:
+            data = f.read().decode("utf-8")
     return wkt.loads(data)
 
 

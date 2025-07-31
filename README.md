@@ -63,8 +63,8 @@ Word data is loaded from the `expanded_words.zip` archive at the repository root
 
 The list is produced by the script `python/generate_word_list.py`:
 
-1. **Source Data**: Peter Norvig's English word list (`word-data/norvig-word-list.txt`)
-2. **Geographic Validation**: Uses a UK polygon to check which latitude and longitude indices intersect land
+1. **Source Data**: Peter Norvig's English word list (`python/word-data/norvig-word-list.txt`)
+2. **Geographic Validation**: Uses a UK polygon (downloaded automatically if missing) to check which latitude and longitude indices intersect land. The polygon archive is not stored in version control.
 3. **Output**: Creates `expanded_words.zip` with exactly 110,001 entries
 
 To regenerate the list:
@@ -72,6 +72,8 @@ To regenerate the list:
 cd python
 python generate_word_list.py
 ```
+
+If the polygon archive is not present, the script will download it automatically from GitHub. You can also fetch it manually with `python download_uk_polygon.py`.
 
 ## Coordinate to Index Mapping
 
