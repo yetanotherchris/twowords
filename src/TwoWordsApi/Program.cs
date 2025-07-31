@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Text;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/openapi/v1.json", "TwoWords API v1");
+        options.DocumentTitle = "TwoWords API Documentation";
+        options.HeadContent = @"
+            <style>
+                .swagger-ui .topbar { display: none; }
+                .swagger-ui .info .title { color: #3b82f6; }
+            </style>";
     });
 }
 
@@ -106,7 +113,12 @@ app.MapGet("/stats", () =>
                 $"Step (precision): {step}\n";
 
     return Results.Text(stats);
-});
+})
+.WithName("GetStats")
+.WithSummary("Get system statistics")
+.WithDescription("Returns statistics about the TwoWords system including word count, coordinate ranges, and precision")
+.WithTags("System")
+.Produces<string>(200, "text/plain");
 
 app.MapGet("/words", (double lat, double lon) =>
 {
@@ -135,6 +147,19 @@ app.MapGet("/words", (double lat, double lon) =>
     };
 
     return Results.Text($"{result.latitudeWord}.{result.longitudeWord}");
+})
+.WithName("GetWords")
+.WithSummary("Convert coordinates to two words")
+.WithDescription("Maps latitude/longitude coordinates to a unique two-word combination. Only covers UK/Ireland land areas (49.0°-60.0°N, -8.0°-2.0°E) with ~10m precision.")
+.WithTags("Mapping")
+.Produces<string>(200, "text/plain")
+.Produces(400)
+.WithOpenApi(operation => new(operation)
+{
+    Parameters = [
+        new() { Name = "lat", In = Microsoft.OpenApi.Models.ParameterLocation.Query, Required = true, Description = "Latitude coordinate (49.0 to 60.0)", Schema = new() { Type = "number", Format = "double", Minimum = 49.0m, Maximum = 60.0m } },
+        new() { Name = "lon", In = Microsoft.OpenApi.Models.ParameterLocation.Query, Required = true, Description = "Longitude coordinate (-8.0 to 2.0)", Schema = new() { Type = "number", Format = "double", Minimum = -8.0m, Maximum = 2.0m } }
+    ]
 });
 
 app.MapGet("/validate", (double lat, double lon) =>
@@ -149,6 +174,18 @@ app.MapGet("/validate", (double lat, double lon) =>
         isValid = isLand, 
         reason = isLand ? "Valid land coordinates" : "Water or inaccessible terrain" 
     });
+})
+.WithName("ValidateCoordinates")
+.WithSummary("Validate if coordinates are mappable")
+.WithDescription("Checks if the given coordinates are within the supported range and over land (not water or inaccessible terrain)")
+.WithTags("Validation")
+.Produces<object>(200)
+.WithOpenApi(operation => new(operation)
+{
+    Parameters = [
+        new() { Name = "lat", In = Microsoft.OpenApi.Models.ParameterLocation.Query, Required = true, Description = "Latitude coordinate (49.0 to 60.0)", Schema = new() { Type = "number", Format = "double", Minimum = 49.0m, Maximum = 60.0m } },
+        new() { Name = "lon", In = Microsoft.OpenApi.Models.ParameterLocation.Query, Required = true, Description = "Longitude coordinate (-8.0 to 2.0)", Schema = new() { Type = "number", Format = "double", Minimum = -8.0m, Maximum = 2.0m } }
+    ]
 });
 
 app.MapGet("/coordinates", (string words, string? format = "lat,lon") =>
@@ -210,6 +247,19 @@ app.MapGet("/coordinates", (string words, string? format = "lat,lon") =>
     }
 
     return Results.Text(response);
+})
+.WithName("GetCoordinates")
+.WithSummary("Convert two words back to coordinates")
+.WithDescription("Converts a two-word combination back to the original latitude/longitude coordinates. Words must be in 'word1.word2' format.")
+.WithTags("Mapping")
+.Produces<string>(200, "text/plain")
+.Produces(400)
+.WithOpenApi(operation => new(operation)
+{
+    Parameters = [
+        new() { Name = "words", In = Microsoft.OpenApi.Models.ParameterLocation.Query, Required = true, Description = "Two words in format 'word1.word2' (e.g., 'apple.banana')", Schema = new() { Type = "string", Pattern = @"^[a-zA-Z]+\.[a-zA-Z]+$" } },
+        new() { Name = "format", In = Microsoft.OpenApi.Models.ParameterLocation.Query, Required = false, Description = "Output format: 'lat,lon' (default) or 'lon,lat'", Schema = new() { Type = "string" } }
+    ]
 });
 
 app.MapGet("/examples", () =>
@@ -270,7 +320,12 @@ app.MapGet("/examples", () =>
     }
 
     return Results.Ok(examples);
-});
+})
+.WithName("GetExamples")
+.WithSummary("Get example word mappings")
+.WithDescription("Returns example two-word mappings for famous UK cities and landmarks to demonstrate the system")
+.WithTags("Examples")
+.Produces<List<string>>(200);
 
 // Redirect root to Swagger UI
 app.MapGet("/", () => Results.Redirect("/swagger"))
