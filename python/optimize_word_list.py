@@ -259,10 +259,12 @@ def calculate_word_score(word: str, food_dishes: Set[str]) -> WordScore:
     is_common = is_common_word(word)
     is_simple = is_simple_word(word)
     is_food = word in food_dishes
-    
+    global large_common_words
+    is_large_common = word in large_common_words
+
     # Base score starts higher for shorter words
     score = 100.0
-    
+
     # Length penalty (prefer shorter words)
     if length <= 3:
         score += 50  # Very short words get bonus
@@ -274,23 +276,23 @@ def calculate_word_score(word: str, food_dishes: Set[str]) -> WordScore:
         score -= 20  # Long words get penalty
     else:
         score -= 50  # Very long words get big penalty
-    
-    # Food dishes get high priority for populated areas
+
+    # Food dishes get highest priority for populated areas
     if is_food:
-        score += 60  # Higher than common words bonus
-    
-    # Common word bonus
+        score += 60  # Highest bonus
+    # Large common words get second highest priority
+    if is_large_common:
+        score += 55
+    # Common word bonus (legacy small set)
     if is_common:
         score += 40
-    
     # Simple word bonus
     if is_simple:
         score += 20
-    
     # Avoid single letters except a few
     if length == 1 and word not in ['a', 'i']:
         score -= 30
-    
+
     return WordScore(word, score, length, is_common, is_simple)
 
 def optimize_word_list(words: List[str], important_indices: Set[int], food_dishes: List[str]) -> List[str]:
@@ -299,7 +301,7 @@ def optimize_word_list(words: List[str], important_indices: Set[int], food_dishe
     print(f"Food dishes available: {len(food_dishes)}")
     
     food_set = set(food_dishes)
-    
+    global large_common_words
     # Score all words
     print("Scoring words by desirability...")
     scored_words = [calculate_word_score(word, food_set) for word in words]
@@ -363,6 +365,15 @@ def save_optimized_words(words: List[str], output_path: str):
         for word in words:
             f.write(f"{word}\n")
 
+def load_common_words(filepath: str) -> set:
+    """Load a large set of common English words from a text file."""
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            return set(line.strip().lower() for line in f if line.strip() and not line.startswith('#'))
+    except FileNotFoundError:
+        print(f"Warning: {filepath} not found, skipping large common word bonus.")
+        return set()
+
 def main():
     print("TwoWords API - Word List Optimizer")
     print("=" * 50)
@@ -387,6 +398,11 @@ def main():
     important_indices = load_important_indices('important_indices.txt')
     print(f"Loaded {len(important_indices)} important indices")
     
+    # Load large common words set for scoring
+    COMMON_WORDS_FILE = '../word-data/common_words.txt'
+    global large_common_words
+    large_common_words = load_common_words(COMMON_WORDS_FILE)
+    
     # Optimize the word list
     optimized_words = optimize_word_list(words, important_indices, food_dishes)
     
@@ -394,6 +410,19 @@ def main():
     output_file = 'optimized_words.txt'
     save_optimized_words(optimized_words, output_file)
     print(f"Saved optimized word list to {output_file}")
+
+    # Always create expanded_words.zip in the root folder, containing optimized_words.txt as expanded_words.txt
+    import zipfile, os
+    # Always create expanded_words.zip in the workspace root (parent of python/)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    root_dir = os.path.dirname(script_dir)
+    zip_path = os.path.join(root_dir, 'expanded_words.zip')
+    # Write optimized_words.txt into the zip as expanded_words.txt
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        zipf.write(output_file, arcname='expanded_words.txt')
+    print(f"Created {zip_path} containing expanded_words.txt")
+
+    # No longer delete other zip files in the root folder
     
     # Show some statistics
     print("\nOptimization Results:")
