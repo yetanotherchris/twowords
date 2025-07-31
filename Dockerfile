@@ -33,13 +33,13 @@ WORKDIR /app
 # Copy the published application
 COPY --from=publish /app/publish .
 
-# Copy the expanded_words.zip file to maintain the expected directory structure
-# The API expects the zip file to be at "../../expanded_words.zip" relative to ContentRootPath
-# ContentRootPath will be /app, so we need the zip at the root /
-COPY --from=build /src/expanded_words.zip /expanded_words.zip
+# Copy the geo_validated_words.zip file to the container root
+# The WordMappingService expects it at /geo_validated_words.zip when DOTNET_RUNNING_IN_CONTAINER=true
+COPY --from=build /src/geo_validated_words.zip /geo_validated_words.zip
 
 # Set environment variables
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
+ENV DOTNET_RUNNING_IN_CONTAINER=true
 
 ENTRYPOINT ["dotnet", "TwoWordsApi.dll"]

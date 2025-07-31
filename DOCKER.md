@@ -68,7 +68,7 @@ The container includes a health check that calls the `/stats` endpoint every 30 
 
 The Docker image includes:
 - The compiled .NET application in `/app`
-- The `expanded_words.zip` file at `/expanded_words.zip`
+- The `geo_validated_words.zip` file at `/geo_validated_words.zip`
 - All necessary .NET runtime dependencies
 
 ## Troubleshooting
@@ -76,10 +76,10 @@ The Docker image includes:
 ### Container won't start
 - Check logs: `docker logs <container-name>`
 - Ensure port 8080 is not already in use
-- Verify the `expanded_words.zip` file exists in the repository root
+- Verify the `geo_validated_words.zip` file exists in the repository root
 
 ### API returns errors
-- Ensure the zip file was copied correctly: `docker exec <container-name> ls -la /expanded_words.zip`
+- Ensure the zip file was copied correctly: `docker exec <container-name> ls -la /geo_validated_words.zip`
 - Check that coordinates are within the UK/Ireland bounds (49.0°-60.0°N, -8.0°-2.0°E)
 
 ### Performance issues
