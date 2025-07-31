@@ -134,7 +134,7 @@ app.MapGet("/words", (double lat, double lon) =>
         longitudeWord = allWords[lonIndex]
     };
 
-    return Results.Ok(result);
+    return Results.Text($"{result.latitudeWord}.{result.longitudeWord}");
 });
 
 app.MapGet("/validate", (double lat, double lon) =>
