@@ -420,3 +420,4 @@ FodyWeavers.xsd
 # Generated word list
 expanded_words.zip
 expanded_words.txt
+python/word-data/uk_polygon.wkt.zip
