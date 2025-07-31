@@ -10,20 +10,18 @@ builder.Services.AddOpenApi();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Enable OpenAPI and Swagger in all environments for public API
+app.MapOpenApi();
+app.UseSwaggerUI(options =>
 {
-    app.MapOpenApi();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/openapi/v1.json", "TwoWords API v1");
-        options.DocumentTitle = "TwoWords API Documentation";
-        options.HeadContent = @"
-            <style>
-                .swagger-ui .topbar { display: none; }
-                .swagger-ui .info .title { color: #3b82f6; }
-            </style>";
-    });
-}
+    options.SwaggerEndpoint("/openapi/v1.json", "TwoWords API v1");
+    options.DocumentTitle = "TwoWords API Documentation";
+    options.HeadContent = @"
+        <style>
+            .swagger-ui .topbar { display: none; }
+            .swagger-ui .info .title { color: #3b82f6; }
+        </style>";
+});
 
 
 // Determine the correct path for expanded_words.zip
