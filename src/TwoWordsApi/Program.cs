@@ -1,13 +1,27 @@
 using System.IO.Compression;
 using System.Text;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure forwarded headers for reverse proxy scenarios (like Fly.io)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | 
+                              Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+    // Trust any proxy (for cloud deployments)
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 // Add services to the container.
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+// Configure forwarded headers middleware (must be early in pipeline)
+app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline.
 // Enable OpenAPI and Swagger in all environments for public API
