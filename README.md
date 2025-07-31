@@ -57,24 +57,21 @@ GET http://localhost:5000/validate?lat=51.5074&lon=-0.1278
 
 ## Word lists
 
-Word data is loaded from the `geo_validated_words.zip` archive at the repository root. This file contains 110,001 entries with geographic validation to ensure only valid UK land coordinates resolve to actual words, while water areas and non-UK coordinates are marked as "INVALID".
+Word data is loaded from the `expanded_words.zip` archive at the repository root. This file contains 110,001 entries. Invalid latitude or longitude indices are marked with `INVALID_LAT` or `INVALID_LON` so the API can reject out-of-bounds coordinates.
 
 ### Word List Generation
 
-The word list is generated using Python scripts in the `python/` directory:
+The list is produced by the script `python/generate_word_list.py`:
 
-1. **Source Data**: Uses Peter Norvig's curated English word list (word-data/norvig-word-list.txt) containing 263,533 high-quality English words
-2. **Geographic Validation**: Applies UK land validation rules to exclude water bodies like Celtic Sea, North Sea, Thames Estuary, etc.
-3. **Population Optimization**: Ensures major UK cities (London, Manchester, Birmingham) receive valid words while problematic coordinates are rejected
-4. **Output**: Creates `geo_validated_words.zip` with exactly 110,001 words, where invalid coordinates contain "INVALID" markers
+1. **Source Data**: Peter Norvig's English word list (`word-data/norvig-word-list.txt`)
+2. **Geographic Validation**: Uses a UK polygon to check which latitude and longitude indices intersect land
+3. **Output**: Creates `expanded_words.zip` with exactly 110,001 entries
 
-To regenerate the word list:
+To regenerate the list:
 ```bash
 cd python
-python simple_fix_words.py
+python generate_word_list.py
 ```
-
-See `python/README.md` for detailed documentation on the word list generation process.
 
 ## Coordinate to Index Mapping
 
@@ -143,23 +140,22 @@ This makes the service stateless and highly scalable.
 ### Geographic Validation Issues
 
 If coordinates that should be valid UK land are being rejected:
-1. Check the `geo_validated_words.zip` file is present in the project root
-2. Regenerate the word list: `cd python && python simple_fix_words.py`
+1. Check the `expanded_words.zip` file is present in the project root
+2. Regenerate the word list: `cd python && python generate_word_list.py`
 3. Copy the new zip file to the project root and restart the API
 
 ### Water Coordinates Resolving to Words
 
 If coordinates over water (like Celtic Sea) are resolving to actual words instead of being rejected:
 1. The word list needs regeneration with proper geographic validation
-2. Run `cd python && python simple_fix_words.py` to fix this issue
-3. Replace the old `geo_validated_words.zip` with the newly generated one
+2. Run `cd python && python generate_word_list.py` to fix this issue
+3. Replace the old `expanded_words.zip` with the newly generated one
 
 ### Major Cities Not Working
 
 If London, Manchester, or other major UK cities return validation errors:
 1. Verify the word list contains valid words at the expected indices
-2. Use `cd python && python verify_indices.py` to check the coordinate calculations
-3. Regenerate the word list if needed
+2. Regenerate the word list if needed
 
 ## Running tests
 
