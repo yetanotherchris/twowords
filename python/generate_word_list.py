@@ -1,3 +1,6 @@
+def ensure_polygon():
+    if not os.path.exists(POLY_WKT_ZIP):
+        download_polygon()
 import os
 import json
 import zipfile
@@ -14,8 +17,7 @@ STEP = 0.0001
 LAT_COUNT = int((LAT_MAX - LAT_MIN) / STEP) + 1
 LON_COUNT = int((LON_MAX - LON_MIN) / STEP) + 1
 
-INVALID_LAT = "INVALID_LAT"
-INVALID_LON = "INVALID_LON"
+INVALID_POINT = "INVALID_POINT"
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -35,12 +37,6 @@ def download_polygon():
     os.makedirs(WORD_DIR, exist_ok=True)
     with zipfile.ZipFile(POLY_WKT_ZIP, "w", compression=zipfile.ZIP_DEFLATED) as z:
         z.writestr("uk_polygon.wkt", wkt_str)
-
-
-def ensure_polygon():
-    if not os.path.exists(POLY_WKT_ZIP):
-        download_polygon()
-
 
 def load_polygon():
     ensure_polygon()
@@ -77,18 +73,30 @@ def lon_intersects(poly, lon):
 def main():
     poly = load_polygon()
     max_count = max(LAT_COUNT, LON_COUNT)
-    base_words = load_words(max_count)
+    # Load optimized words from optimize_words.py output
+    optimized_words_path = os.path.join(SCRIPT_DIR, "optimized_words.txt")
+    if not os.path.exists(optimized_words_path):
+        # Fallback to word-data/optimized_words.txt
+        optimized_words_path = os.path.join(WORD_DIR, "optimized_words.txt")
+    with open(optimized_words_path, "r", encoding="utf-8") as f:
+        base_words = [line.strip() for line in f if line.strip()]
 
     results = []
+    from shapely.geometry import Point
     for i in range(max_count):
-        lat_valid = lat_intersects(poly, LAT_MIN + i * STEP) if i < LAT_COUNT else False
-        lon_valid = lon_intersects(poly, LON_MIN + i * STEP) if i < LON_COUNT else False
-        if not lat_valid:
-            results.append(INVALID_LAT)
-        elif not lon_valid:
-            results.append(INVALID_LON)
+        lat = LAT_MIN + i * STEP if i < LAT_COUNT else LAT_MIN
+        lon = LON_MIN + i * STEP if i < LON_COUNT else LON_MIN
+        point = Point(lon, lat)
+        if not poly.contains(point):
+            results.append(INVALID_POINT)
         else:
             results.append(base_words[i])
+
+    # Validate output word list length
+    expected_count = max_count
+    actual_count = len(results)
+    if actual_count != expected_count:
+        raise RuntimeError(f"Output word list has {actual_count} entries, expected {expected_count}.")
 
     txt_content = "\n".join(results)
     with zipfile.ZipFile(OUTPUT_ZIP, "w", compression=zipfile.ZIP_DEFLATED) as z:

@@ -116,7 +116,9 @@ The `IsLikelyLand()` function uses hardcoded geographic rules rather than extern
 - **Scaling**: Stateless design supports horizontal scaling
 
 ## Common Tasks
-- **Add new city optimization**: Update `calculate_popular_indices.py`, regenerate word list
-- **Adjust geographic boundaries**: Modify `IsLikelyLand()` rules in Program.cs
-- **Change word prioritization**: Adjust scoring in `optimize_word_list.py`
-- **API changes**: All logic in single Program.cs file using minimal APIs pattern
+
+
+
+- Copilot must never prompt the user to continue or ask for permission to proceed.
+- Copilot should always act until the user's problem is fully resolved, without unnecessary questions.
+- Copilot should use available context and take direct action whenever possible.
