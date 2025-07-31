@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.OpenApi.Models;
 
@@ -38,26 +39,26 @@ app.UseSwaggerUI(options =>
 });
 
 
-// Determine the correct path for expanded_words.zip
-// In container: /expanded_words.zip (copied to root)
-// Local development: ../../expanded_words.zip (relative to ContentRootPath)
+// Determine the correct path for geo_validated_words.zip
+// In container: /geo_validated_words.zip (copied to root)
+// Local development: ../../geo_validated_words.zip (relative to ContentRootPath)
 string zipPath;
 var isInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 
 if (isInContainer)
 {
-    zipPath = "/expanded_words.zip";
+    zipPath = "/geo_validated_words.zip";
 }
 else
 {
     zipPath = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath,
-        "..", "..", "expanded_words.zip"));
+        "..", "..", "geo_validated_words.zip"));
 }
 
 // Verify the file exists
 if (!File.Exists(zipPath))
 {
-    throw new FileNotFoundException($"expanded_words.zip not found at {zipPath}. " +
+    throw new FileNotFoundException($"geo_validated_words.zip not found at {zipPath}. " +
         $"ContentRootPath: {app.Environment.ContentRootPath}, " +
         $"IsInContainer: {isInContainer}");
 }
@@ -91,51 +92,14 @@ int lonCount = (int)Math.Ceiling((lonMax - lonMin) / step) + 1;
 if (allWords.Length < Math.Max(latCount, lonCount))
     throw new Exception("Word list is not large enough for coverage.");
 
-// Simple land validation rules for UK/Ireland
-static bool IsLikelyLand(double lat, double lon)
+// Simple validation: check if the word at the index is "INVALID"
+static bool IsValidCoordinate(int latIndex, int lonIndex, string[] words)
 {
-    // Rule 1: Exclude major seas around UK/Ireland
-    // Irish Sea (rough boundaries)
-    if (lat >= 53.0 && lat <= 55.5 && lon >= -6.0 && lon <= -3.0) return false;
-    
-    // North Sea (eastern edge)
-    if (lon > 1.0) return false;
-    
-    // Atlantic Ocean (western edge)
-    if (lon < -7.0) return false;
-    
-    // English Channel (southern edge)
-    if (lat < 50.0) return false;
-    
-    // Rule 2: Exclude Scottish Highlands (very mountainous/remote)
-    if (lat > 57.0 && lon >= -5.0 && lon <= -2.0) return false;
-    
-    // Rule 3: Exclude major lochs/lakes
-    // Loch Ness area
-    if (lat >= 57.2 && lat <= 57.4 && lon >= -4.7 && lon <= -4.4) return false;
-    
-    // Rule 4: Exclude Shetland/Orkney (too remote)
-    if (lat > 58.5) return false;
-    
-    // Rule 5: Exclude Isle of Man (in Irish Sea)
-    if (lat >= 54.0 && lat <= 54.5 && lon >= -4.8 && lon <= -4.3) return false;
-    
-    // Rule 6: Exclude Anglesey (Welsh island)
-    if (lat >= 53.1 && lat <= 53.4 && lon >= -4.8 && lon <= -4.2) return false;
-    
-    // Rule 7: Exclude Northern Ireland mountainous areas
-    if (lat >= 54.5 && lat <= 55.3 && lon >= -7.0 && lon <= -5.5) return false;
-    
-    // Rule 8: Exclude Dartmoor/Exmoor (Southwest England highlands)
-    if (lat >= 50.4 && lat <= 51.3 && lon >= -4.2 && lon <= -3.3) return false;
-    
-    // Rule 9: Exclude Lake District (Cumbrian mountains)
-    if (lat >= 54.3 && lat <= 54.8 && lon >= -3.4 && lon <= -2.9) return false;
-    
-    // Rule 10: Exclude Snowdonia (Welsh mountains)
-    if (lat >= 52.7 && lat <= 53.2 && lon >= -4.1 && lon <= -3.6) return false;
-    
-    return true;
+    // Check if either latitude or longitude word is marked as invalid
+    if (latIndex >= words.Length || lonIndex >= words.Length)
+        return false;
+        
+    return words[latIndex] != "INVALID" && words[lonIndex] != "INVALID";
 }
 
 app.MapGet("/stats", () =>
@@ -160,17 +124,18 @@ app.MapGet("/words", (double lat, double lon) =>
         return Results.BadRequest("Coordinates out of range");
     }
 
-    if (!IsLikelyLand(lat, lon))
-    {
-        return Results.BadRequest("Coordinates appear to be over water or inaccessible terrain");
-    }
-
     var latIndex = (int)Math.Floor((lat - latMin) / step);
     var lonIndex = (int)Math.Floor((lon - lonMin) / step);
 
     if (latIndex >= latCount || lonIndex >= lonCount)
     {
         return Results.BadRequest("Word list is too small for these coordinates");
+    }
+
+    // Check if coordinates are valid using pre-computed validation
+    if (!IsValidCoordinate(latIndex, lonIndex, allWords))
+    {
+        return Results.BadRequest("Coordinates appear to be over water or inaccessible terrain");
     }
 
     var result = new
@@ -202,10 +167,13 @@ app.MapGet("/validate", (double lat, double lon) =>
         return Results.Ok(new { isValid = false, reason = "Out of range" });
     }
 
-    var isLand = IsLikelyLand(lat, lon);
+    var latIndex = (int)Math.Floor((lat - latMin) / step);
+    var lonIndex = (int)Math.Floor((lon - lonMin) / step);
+    
+    var isValid = IsValidCoordinate(latIndex, lonIndex, allWords);
     return Results.Ok(new { 
-        isValid = isLand, 
-        reason = isLand ? "Valid land coordinates" : "Water or inaccessible terrain" 
+        isValid = isValid, 
+        reason = isValid ? "Valid land coordinates" : "Water or inaccessible terrain" 
     });
 })
 .WithName("ValidateCoordinates")
@@ -262,8 +230,8 @@ app.MapGet("/coordinates", (string words, string? format = "lat,lon") =>
     var lat = latMin + (latIndex * step);
     var lon = lonMin + (lonIndex * step);
 
-    // Validate that the coordinates are likely land
-    if (!IsLikelyLand(lat, lon))
+    // Validate that the coordinates are valid using pre-computed validation
+    if (!IsValidCoordinate(latIndex, lonIndex, allWords))
     {
         return Results.BadRequest("The coordinates for these words appear to be over water or inaccessible terrain");
     }

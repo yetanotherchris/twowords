@@ -1,0 +1,22 @@
+# Requirements for TwoWords Python scripts
+# Used for word list optimization and geographic validation
+
+# Note: The core scripts use only built-in Python modules:
+# - zipfile (built-in): for handling word list archives
+# - re (built-in): for regex pattern matching
+# - math (built-in): for coordinate calculations
+# - typing (built-in): for type hints
+# - dataclasses (built-in): for data structures
+
+# No external dependencies are required for the current active scripts:
+# - simple_fix_words.py
+# - create_optimized_geo_words.py  
+# - optimize_word_list.py
+# - calculate_popular_indices.py
+# - verify_indices.py
+
+# If you want to experiment with advanced geographic validation
+# using real boundary data, uncomment these:
+# geopandas>=0.12.0  # Geographic data processing
+# shapely>=2.0.0     # Geometric operations and point-in-polygon testing
+# requests>=2.28.0   # HTTP requests for downloading boundary data
