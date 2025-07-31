@@ -73,31 +73,63 @@ public class WordMappingService : IWordMappingService
 
     public bool IsValidCoordinate(int latIndex, int lonIndex)
     {
-        // Since we're using expanded_words.zip, we can do basic geographic validation
         // Convert indices back to coordinates for validation
         var lat = LatMin + (latIndex * Step);
         var lon = LonMin + (lonIndex * Step);
-        
+
         // Check if either index is out of range
         if (latIndex >= _allWords.Length || lonIndex >= _allWords.Length)
             return false;
-        
-        // Basic geographic validation for UK/Ireland region
-        // Exclude obvious water areas (simplified validation)
-        
-        // Irish Sea (rough boundaries)
-        if (lat >= 53.0 && lat <= 55.0 && lon >= -6.0 && lon <= -3.0)
-            return false;
-            
-        // English Channel (rough boundaries)  
-        if (lat >= 49.0 && lat <= 51.0 && lon >= -2.0 && lon <= 2.0)
-            return false;
-            
-        // North Sea (rough boundaries)
-        if (lat >= 54.0 && lat <= 60.0 && lon >= 0.0 && lon <= 2.0)
-            return false;
-        
-        return true;
+
+        // --- Begin precise UK land validation (ported from Python) ---
+        // Core UK population rectangle
+        bool inCore = (lat >= 50.7 && lat <= 54.0 && lon >= -4.5 && lon <= 1.8);
+        if (inCore)
+        {
+            // Exclusions: major water bodies and mountains
+            if (
+                // Bristol Channel and Severn Estuary
+                (lat >= 51.3 && lat <= 51.7 && lon >= -4.5 && lon <= -2.5) ||
+                // The Wash (East England)
+                (lat >= 52.7 && lat <= 53.1 && lon >= 0.0 && lon <= 0.8) ||
+                // Thames Estuary (outer areas)
+                (lat >= 51.3 && lat <= 51.6 && lon >= 0.5 && lon <= 1.8) ||
+                // Exmoor/Dartmoor (Southwest highlands)
+                (lat >= 50.7 && lat <= 51.3 && lon >= -4.5 && lon <= -3.3) ||
+                // Peak District core (mountainous)
+                (lat >= 53.1 && lat <= 53.5 && lon >= -2.0 && lon <= -1.5) ||
+                // North Wales mountains (Snowdonia)
+                (lat >= 52.7 && lat <= 53.2 && lon >= -4.1 && lon <= -3.6) ||
+                // Lake District (too mountainous)
+                (lat >= 54.3 && lat <= 54.8 && lon >= -3.4 && lon <= -2.9)
+            )
+            {
+                return false;
+            }
+            return true;
+        }
+
+        // Outside core area - allow major cities only
+        if (
+            // Edinburgh (Scotland)
+            (lat >= 55.9 && lat <= 56.0 && lon >= -3.3 && lon <= -3.1) ||
+            // Glasgow (Scotland)
+            (lat >= 55.8 && lat <= 55.9 && lon >= -4.4 && lon <= -4.1) ||
+            // Newcastle/Sunderland corridor
+            (lat >= 54.8 && lat <= 55.1 && lon >= -1.8 && lon <= -1.2) ||
+            // Belfast area (Northern Ireland)
+            (lat >= 54.5 && lat <= 54.7 && lon >= -6.0 && lon <= -5.8) ||
+            // Plymouth (major southwest city)
+            (lat >= 50.3 && lat <= 50.4 && lon >= -4.2 && lon <= -4.0) ||
+            // Aberdeen (Scotland)
+            (lat >= 57.1 && lat <= 57.2 && lon >= -2.2 && lon <= -2.0)
+        )
+        {
+            return true;
+        }
+
+        return false;
+        // --- End precise UK land validation ---
     }
 
     public int FindWordIndex(string word)
