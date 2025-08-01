@@ -12,8 +12,8 @@ TwoWords is a deterministic coordinate-to-word mapping service for the UK, simil
 - **Stateless**: Same coordinates always return same words, no database required
 
 ### Word List Strategy
-- **Source**: `expanded_words.zip` in root contains optimized 110,001 words
-- **Optimization**: Food dishes prioritized for major population centers (see `python/optimize_word_list.py`)
+- **Source**: `data/output/words.txt` contains the optimized 110,001 words
+- **Optimization**: Food dishes prioritized for major population centers (see `data/python/optimize_word_list.py`)
 - **Population mapping**: Indices 18224, 25073, 44808, etc. get memorable words like "pho", "basil", "kebab"
 - **Land validation**: Built-in geographic filters exclude seas, mountains, remote areas
 
@@ -21,11 +21,11 @@ TwoWords is a deterministic coordinate-to-word mapping service for the UK, simil
 - **Primary source**: Peter Norvig's curated English word list (norvig.com)
 - **URL**: https://norvig.com/ngrams/word.list
 - **Quality**: 263,533 high-quality English words, manually curated
-- **Download location**: `word-data/norvig-word-list.txt` (main curated source)
+- **Download location**: `data/words/norvig-word-list.txt` (main curated source)
 - **Filtered to**: ~154,000 words after length and validation filtering
 - **Benefits**: No non-English words (like "devaul", "cochao"), proper dictionary words only
-- **Fallback**: Uses existing `expanded_words.zip` if Norvig list unavailable
-- **Processing**: Direct access from word-data directory, clean and simple
+- **Fallback**: Uses existing `data/output/words.txt` if Norvig list unavailable
+- **Processing**: Direct access from `data/words` directory, clean and simple
 
 ### API Structure
 The API has been refactored into a clean MVC architecture:
@@ -70,11 +70,11 @@ dotnet run --project src/TwoWordsApi/TwoWordsApi.csproj --urls http://localhost:
 
 ### Word List Optimization
 ```bash
-# From python/ directory - regenerate optimized word list
+# From data/python/ directory - regenerate optimized word list
 python optimize_word_list.py
 
-# To redownload word sources (in word-data/ directory):
-# Invoke-WebRequest -Uri "https://norvig.com/ngrams/word.list" -OutFile "word-data/norvig-word-list.txt"
+# To redownload word sources (in data/words/ directory):
+# Invoke-WebRequest -Uri "https://norvig.com/ngrams/word.list" -OutFile "data/words/norvig-word-list.txt"
 
 # Calculate population indices for new cities  
 python calculate_popular_indices.py
@@ -91,7 +91,7 @@ The `IsLikelyLand()` function uses hardcoded geographic rules rather than extern
 - Filters out Scottish Highlands, major lochs, remote islands
 - Performance-critical: runs on every request without external calls
 
-### Word Scoring Algorithm (`python/optimize_word_list.py`)
+-### Word Scoring Algorithm (`data/python/optimize_word_list.py`)
 - **Food dishes**: +60 points (highest priority for population centers)
 - **Short words (≤3 chars)**: +50 points
 - **Common English words**: +40 points
@@ -104,11 +104,11 @@ The `IsLikelyLand()` function uses hardcoded geographic rules rather than extern
 - Tests assume specific word placements (first word is "a" at coordinates 49.0, -8.0)
 
 ## Critical Files
-- `expanded_words.zip` - Optimized word list (110,001 entries)
-- `word-data/norvig-word-list.txt` - Peter Norvig's curated English words (primary source)
-- `word-data/important_indices.txt` - Population center indices for optimization
-- `word-data/food_dishes_final.txt` - 163 food terms prioritized for cities
-- `OPTIMIZATION_README.md` - Detailed optimization strategy and results
+- `data/output/words.txt` - Optimized word list (110,001 entries)
+- `data/words/norvig-word-list.txt` - Peter Norvig's curated English words (primary source)
+- `data/words/important_indices.txt` - Population center indices for optimization
+- `data/words/food_dishes_final.txt` - 163 food terms prioritized for cities
+- `data/OPTIMIZATION_README.md` - Detailed optimization strategy and results
 
 ## External Dependencies
 - **Minimal**: No database, no external APIs for validation
