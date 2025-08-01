@@ -1,27 +1,65 @@
+# Agents Overview
 
-# Repository Contributor Guidelines
+This document describes the agents, automation, and co-pilot instructions for both the Python and C# (.NET) parts of the TwoWords project.
 
-## Code Formatting
-- Stick to the existing style in the project when editing C# or Python files.
+---
 
-## Testing
-- Run all tests before submitting a pull request:
-  ```bash
-  dotnet test tests/TwoWordsApi.Tests/TwoWordsApi.Tests.csproj -c Release
-  ```
-  Ensure the test suite completes without failures.
+## Python Agents (Data Pipeline)
 
-## Data Directory Structure
-- All word lists, polygons, and output files are now stored under the `data/` directory:
-  - `data/words/` — All word list files (e.g., `norvig-word-list.txt`, `food_dishes_final.txt`, `important_indices.txt`, etc.)
-  - `data/polygons/` — Polygon data (e.g., `uk_polygon.wkt.zip`)
-  - `data/output/` — Generated output files (e.g., `words.txt`)
+### Purpose
+Automate the generation, curation, filtering, and optimization of word lists for the TwoWords API, ensuring high quality and geographic relevance.
 
-## Large Files
-- **Do not add large zip archives or text files to the repository.**
-  - Avoid committing new `.zip` or `.txt` files larger than 100 kilobytes. This will break Codex's PR requests.
-  - If large data is required, host it externally and download it during tests or use a smaller sample.
+### Main Scripts & Agents
+- **twowords_cli.py**: Main CLI entry point for all pipeline operations.
+- **words_create_inital_curated_list.py**: Agent for merging and curating word sources (Norvig, WordNet, food dishes, ChatGPT, etc.).
+- **words_filter_for_polygon.py**: Agent for filtering words by UK/Ireland polygon using geospatial logic.
+- **optimize_word_list.py**: Agent for scoring and optimizing the word list for memorability and population centers.
+- **calculate_popular_indices.py**: Agent for identifying grid indices for major cities.
+- **verify_indices.py**: Agent for validating mapping correctness.
+- **twowords_utils/**: Utility agents for polygon handling, word curation, and zip management.
 
-## Pull Requests
-- Keep PRs focused and limit them to necessary changes.
-- Provide clear descriptions of the changes and reference any related issues.
+### Data Flow
+1. **Input**: Multiple word sources (curated lists, WordNet, ChatGPT, frequency data).
+2. **Processing**: Merge, deduplicate, filter, and score words.
+3. **Geographic Filtering**: Remove words mapping to non-UK/Ireland land areas.
+4. **Optimization**: Assign best words to population centers.
+5. **Output**: Final word list for API use.
+
+### Automation
+- All scripts are stateless and reproducible.
+- Designed for batch or scheduled runs.
+- CLI supports modular execution of each step.
+
+---
+
+## C# Agents (API Backend)
+
+### Purpose
+Serve the TwoWords API, mapping coordinates to memorable word pairs and exposing endpoints for lookup and validation.
+
+### Main Components & Agents
+- **Controllers/TwoWordsController.cs**: Main API agent for word lookup and mapping endpoints.
+- **Controllers/MapController.cs**: Agent for map-related endpoints and polygon queries.
+- **Services/WordMappingService.cs**: Core agent for mapping grid indices to word pairs, using the optimized word list.
+- **Services/IWordMappingService.cs**: Interface for word mapping agent.
+- **Program.cs**: API entry point and agent for service configuration.
+
+### Data Flow
+1. **Input**: API requests with coordinates or indices.
+2. **Processing**: Map input to grid index, retrieve word pair from optimized list.
+3. **Output**: Return word pair and metadata to client.
+
+### Automation
+- Stateless, deterministic mapping logic.
+- Designed for scalable, concurrent API requests.
+- Supports integration with mapping frontends and validation tools.
+
+---
+
+## Attribution
+- Python agents use data from Peter Norvig, WordNet, ChatGPT, and other sources (see `data/python/README.md`).
+- C# agents use the output of the Python pipeline for all word mapping.
+
+---
+
+For detailed co-pilot instructions, see `CO-PILOT-INSTRUCTIONS.md`.
