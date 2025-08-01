@@ -33,9 +33,9 @@ WORKDIR /app
 # Copy the published application
 COPY --from=publish /app/publish .
 
-# Copy the geo_validated_words.zip file to the container root
-# The WordMappingService expects it at /geo_validated_words.zip when DOTNET_RUNNING_IN_CONTAINER=true
-COPY --from=build /src/geo_validated_words.zip /geo_validated_words.zip
+# Copy the expanded_words.zip file to the container root
+# The WordMappingService expects it at /expanded_words.zip when DOTNET_RUNNING_IN_CONTAINER=true
+COPY --from=build /src/expanded_words.zip /expanded_words.zip
 
 # Set environment variables
 ENV ASPNETCORE_URLS=http://+:8080
