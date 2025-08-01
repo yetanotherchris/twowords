@@ -15,7 +15,6 @@ Automate the generation, curation, filtering, and optimization of word lists for
 - **words_filter_for_polygon.py**: Agent for filtering words by UK/Ireland polygon using geospatial logic.
 - **optimize_word_list.py**: Agent for scoring and optimizing the word list for memorability and population centers.
 - **calculate_popular_indices.py**: Agent for identifying grid indices for major cities.
-- **verify_indices.py**: Agent for validating mapping correctness.
 - **twowords_utils/**: Utility agents for polygon handling, word curation, and zip management.
 
 ### Data Flow

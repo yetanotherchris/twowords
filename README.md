@@ -12,12 +12,23 @@ identified.
 
 ## Running
 
+### Using Docker (Recommended)
+
+```bash
+# Using Docker Compose
+docker-compose up -d
+
+# The API will be available at http://localhost:8080
+```
+
+### Using .NET directly
+
 ```bash
 # build
-dotnet build TwoWordsApi/TwoWordsApi.csproj -c Release
+dotnet build src/TwoWordsApi/TwoWordsApi.csproj -c Release
 
 # run
-cd TwoWordsApi
+cd src/TwoWordsApi
 dotnet run --urls http://localhost:5000
 ```
 
@@ -57,23 +68,49 @@ GET http://localhost:5000/validate?lat=51.5074&lon=-0.1278
 
 ## Word lists
 
-Word data is loaded from the `expanded_words.zip` archive at the repository root. This file contains 110,001 entries. Invalid latitude or longitude indices are marked with `INVALID_LAT` or `INVALID_LON` so the API can reject out-of-bounds coordinates.
+Word data is loaded from the `expanded_words.zip` archive at the repository root. This file contains curated words from multiple sources including Peter Norvig's English word list, food dishes, and common nouns. Invalid latitude or longitude indices are marked with placeholders so the API can reject out-of-bounds coordinates.
 
 ### Word List Generation
 
-The list is produced by the script `python/generate_word_list.py`:
+The word list is produced by the Python data pipeline in the `data/python/` directory:
 
-1. **Source Data**: Peter Norvig's English word list (`python/word-data/norvig-word-list.txt`)
-2. **Geographic Validation**: Uses a UK polygon (downloaded automatically if missing) to check which latitude and longitude indices intersect land. The polygon archive is not stored in version control.
-3. **Output**: Creates `expanded_words.zip` with exactly 110,001 entries
+1. **Source Data**: Multiple sources including Peter Norvig's English word list, common nouns, food dishes, and frequency data
+2. **Geographic Validation**: Uses a UK/Ireland polygon to check which latitude and longitude indices intersect land
+3. **Output**: Creates the final word list in `data/output/words.txt` and can generate `words.zip`
 
-To regenerate the list:
+#### Using Docker (Recommended)
+
+The easiest way to run the data pipeline is using Docker:
+
 ```bash
-cd python
-python generate_word_list.py
+# Build the Python CLI image
+docker build -f Dockerfile.python -t twowords-cli .
+
+# Generate curated word list
+docker run --rm twowords-cli python /python/twowords_cli.py curate
+
+# Apply geographic filtering
+docker run --rm twowords-cli python /python/twowords_cli.py filter
+
+# Create compressed output
+docker run --rm twowords-cli python /python/twowords_cli.py zip
+
+# Copy the generated files from container to host (if needed)
+docker run --rm -v $(pwd):/host twowords-cli cp /output/words.txt /words.zip /host/
 ```
 
-If the polygon archive is not present, the script will download it automatically from GitHub. You can also fetch it manually with `python download_uk_polygon.py`.
+#### Using Python directly
+
+If you have Python 3.11+ and the required dependencies installed:
+
+```bash
+cd data/python
+python twowords_cli.py curate      # Generate curated word list
+python twowords_cli.py filter      # Apply geographic filtering
+python twowords_cli.py zip         # Create words.zip from the output
+```
+
+Note: The API currently expects `expanded_words.zip` at the repository root. You may need to copy/rename the generated `words.zip` to `expanded_words.zip` for the API to function properly.
 
 ## Coordinate to Index Mapping
 
@@ -142,22 +179,33 @@ This makes the service stateless and highly scalable.
 ### Geographic Validation Issues
 
 If coordinates that should be valid UK land are being rejected:
-1. Check the `expanded_words.zip` file is present in the project root
-2. Regenerate the word list: `cd python && python generate_word_list.py`
-3. Copy the new zip file to the project root and restart the API
+1. Check that the word list data is present
+2. Regenerate the word list using Docker: 
+   ```bash
+   docker run --rm twowords-cli python /python/twowords_cli.py curate
+   docker run --rm twowords-cli python /python/twowords_cli.py filter
+   ```
+3. Restart the API
 
 ### Water Coordinates Resolving to Words
 
 If coordinates over water (like Celtic Sea) are resolving to actual words instead of being rejected:
 1. The word list needs regeneration with proper geographic validation
-2. Run `cd python && python generate_word_list.py` to fix this issue
-3. Replace the old `expanded_words.zip` with the newly generated one
+2. Run the filter command using Docker:
+   ```bash
+   docker run --rm twowords-cli python /python/twowords_cli.py filter
+   ```
+3. Restart the API with the updated word list
 
 ### Major Cities Not Working
 
 If London, Manchester, or other major UK cities return validation errors:
 1. Verify the word list contains valid words at the expected indices
-2. Regenerate the word list if needed
+2. Regenerate the word list using Docker:
+   ```bash
+   docker run --rm twowords-cli python /python/twowords_cli.py curate
+   docker run --rm twowords-cli python /python/twowords_cli.py filter
+   ```
 
 ## Running tests
 
