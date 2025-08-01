@@ -30,7 +30,7 @@ def main():
     else:
         # Running locally
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        root_dir = args.root_dir or os.path.dirname(os.path.dirname(script_dir))
+        root_dir = args.root_dir or os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
         output_dir = args.output_dir or os.path.join(root_dir, "data", "output")
         input_file = args.input_file or os.path.join(output_dir, "words.txt")
         output_zip = os.path.join(root_dir, "words.zip")

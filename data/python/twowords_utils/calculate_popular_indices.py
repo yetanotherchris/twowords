@@ -61,7 +61,7 @@ def main():
     else:
         # Running locally
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        repo_root = os.path.dirname(os.path.dirname(script_dir))
+        repo_root = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
         output_dir = args.output_dir or os.path.join(repo_root, "data", "words")
     
     print("TwoWords API - Popular Indices Calculator")

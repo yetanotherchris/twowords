@@ -51,7 +51,7 @@ def main():
     else:
         # Running locally
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        repo_root = os.path.dirname(os.path.dirname(script_dir))
+        repo_root = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
         words_dir = args.words_dir or os.path.join(repo_root, "data", "words")
         output_dir = args.output_dir or os.path.join(repo_root, "data", "output")
     
