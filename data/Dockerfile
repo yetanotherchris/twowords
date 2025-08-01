@@ -10,13 +10,17 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-COPY python/requirements.txt ./requirements.txt
+COPY data/python/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy all scripts and data from data/ into /
-COPY . .
+COPY data/. .
 
 # Set environment variables for Python
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "/python/twowords_cli.py"]
+# Set the working directory to where the Python script is located
+WORKDIR /python
+
+# Set the entrypoint to run the CLI with any passed arguments
+ENTRYPOINT ["python", "twowords_cli.py"]

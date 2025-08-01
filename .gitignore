@@ -418,4 +418,5 @@ FodyWeavers.xsd
 *.msp
 
 # Generated word list
-expanded_words.txt
+data/temp/*
+data/output/*

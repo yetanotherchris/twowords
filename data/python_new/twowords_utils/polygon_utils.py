@@ -85,15 +85,51 @@ class PolygonUtils:
         return poly.intersects(line)
 
     def filter_words_for_polygon(self, base_words):
+        """
+        Filter words by polygon, marking out-of-bounds coordinates as INVALID_POINT.
+        This follows the logic from words_filter_for_polygon.py.
+        """
+        print("Loading polygon for filtering...")
         poly = self.load_polygon()
         max_count = max(self.LAT_COUNT, self.LON_COUNT)
+        
+        # Validate input
+        if len(base_words) < max_count:
+            print(f"Warning: Base word list has {len(base_words)} words, but need {max_count}. Padding with placeholders.")
+            # Pad with placeholders if needed
+            while len(base_words) < max_count:
+                base_words.append(f"word{len(base_words)}")
+        
+        print(f"Filtering {max_count} coordinate positions against UK/Ireland polygon...")
         results = []
+        valid_count = 0
+        invalid_count = 0
+        
         for i in range(max_count):
             lat = self.LAT_MIN + i * self.STEP if i < self.LAT_COUNT else self.LAT_MIN
             lon = self.LON_MIN + i * self.STEP if i < self.LON_COUNT else self.LON_MIN
             point = Point(lon, lat)
+            
             if not poly.contains(point):
                 results.append(self.INVALID_POINT)
+                invalid_count += 1
             else:
-                results.append(base_words[i])
+                results.append(base_words[i] if i < len(base_words) else f"word{i}")
+                valid_count += 1
+        
+        # Validate output word list length
+        expected_count = max_count
+        actual_count = len(results)
+        if actual_count != expected_count:
+            raise RuntimeError(f"Output word list has {actual_count} entries, expected {expected_count}.")
+        
+        print(f"Polygon filtering complete: {valid_count} valid positions, {invalid_count} invalid positions")
+        
+        # Show sample of valid words for verification
+        sample_words = [w for w in results[:100] if w != self.INVALID_POINT][:10]
+        if sample_words:
+            print(f"Sample of first 10 valid words: {sample_words}")
+        else:
+            print("Warning: No valid words found in first 100 positions")
+        
         return results

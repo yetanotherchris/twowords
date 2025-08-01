@@ -14,12 +14,65 @@ identified.
 
 ### Using Docker (Recommended)
 
+The easiest way to run the TwoWords API is using Docker:
+
 ```bash
-# Using Docker Compose
+# Build and run the service
 docker-compose up -d
 
-# The API will be available at http://localhost:8080
+# View logs
+docker-compose logs -f
+
+# Stop the service
+docker-compose down
 ```
+
+The API will be available at http://localhost:8080
+
+#### Using Docker directly
+
+```bash
+# Build the image
+docker build -t twowords-api .
+
+# Run the container
+docker run -d -p 8080:8080 --name twowords-api twowords-api
+
+# View logs
+docker logs twowords-api
+
+# Stop and remove the container
+docker rm -f twowords-api
+```
+
+#### Testing the Docker Deployment
+
+Once the container is running, you can test it:
+
+```bash
+# Check API stats
+curl http://localhost:8080/stats
+
+# Test word mapping for London
+curl "http://localhost:8080/words?lat=51.5074&lon=-0.1278"
+
+# View examples
+curl http://localhost:8080/examples
+
+# Access Swagger UI in your browser
+# Open http://localhost:8080
+```
+
+#### Docker Environment Variables
+
+The container supports these environment variables:
+
+- `ASPNETCORE_ENVIRONMENT`: Set to `Development` or `Production` (default: `Production`)
+- `ASPNETCORE_URLS`: URLs the app listens on (default: `http://+:8080`)
+
+#### Docker Health Check
+
+The container includes a health check that calls the `/stats` endpoint every 30 seconds.
 
 ### Using .NET directly
 
@@ -78,39 +131,7 @@ The word list is produced by the Python data pipeline in the `data/python/` dire
 2. **Geographic Validation**: Uses a UK/Ireland polygon to check which latitude and longitude indices intersect land
 3. **Output**: Creates the final word list in `data/output/words.txt` and can generate `words.zip`
 
-#### Using Docker (Recommended)
-
-The easiest way to run the data pipeline is using Docker:
-
-```bash
-# Build the Python CLI image
-docker build -f Dockerfile.python -t twowords-cli .
-
-# Generate curated word list
-docker run --rm twowords-cli python /python/twowords_cli.py curate
-
-# Apply geographic filtering
-docker run --rm twowords-cli python /python/twowords_cli.py filter
-
-# Create compressed output
-docker run --rm twowords-cli python /python/twowords_cli.py zip
-
-# Copy the generated files from container to host (if needed)
-docker run --rm -v $(pwd):/host twowords-cli cp /output/words.txt /words.zip /host/
-```
-
-#### Using Python directly
-
-If you have Python 3.11+ and the required dependencies installed:
-
-```bash
-cd data/python
-python twowords_cli.py curate      # Generate curated word list
-python twowords_cli.py filter      # Apply geographic filtering
-python twowords_cli.py zip         # Create words.zip from the output
-```
-
-Note: The API currently expects `expanded_words.zip` at the repository root. You may need to copy/rename the generated `words.zip` to `expanded_words.zip` for the API to function properly.
+See the [Data Pipeline README](data/README.md) for detailed instructions on running the Python data pipeline.
 
 ## Coordinate to Index Mapping
 
@@ -176,6 +197,21 @@ This makes the service stateless and highly scalable.
 
 ## Troubleshooting
 
+### Docker Issues
+
+#### Container won't start
+- Check logs: `docker logs <container-name>`
+- Ensure port 8080 is not already in use
+- Verify the `geo_validated_words.zip` file exists in the repository root
+
+#### API returns errors
+- Ensure the zip file was copied correctly: `docker exec <container-name> ls -la /geo_validated_words.zip`
+- Check that coordinates are within the UK/Ireland bounds (49.0°-60.0°N, -8.0°-2.0°E)
+
+#### Performance issues
+- The word list is loaded into memory at startup, so initial load may take a moment
+- Consider resource limits if running in a constrained environment
+
 ### Geographic Validation Issues
 
 If coordinates that should be valid UK land are being rejected:
@@ -193,6 +229,7 @@ If coordinates over water (like Celtic Sea) are resolving to actual words instea
 1. The word list needs regeneration with proper geographic validation
 2. Run the filter command using Docker:
    ```bash
+   docker build -f Dockerfile.python -t twowords-cli .
    docker run --rm twowords-cli python /python/twowords_cli.py filter
    ```
 3. Restart the API with the updated word list
@@ -203,6 +240,7 @@ If London, Manchester, or other major UK cities return validation errors:
 1. Verify the word list contains valid words at the expected indices
 2. Regenerate the word list using Docker:
    ```bash
+   docker build -f Dockerfile.python -t twowords-cli .
    docker run --rm twowords-cli python /python/twowords_cli.py curate
    docker run --rm twowords-cli python /python/twowords_cli.py filter
    ```
