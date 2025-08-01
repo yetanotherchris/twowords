@@ -5,6 +5,7 @@ This document provides detailed instructions for using GitHub Copilot and other 
 ---
 
 ## General Guidelines
+- Use Powershell commands for all terminal operations.
 - Always attribute data sources and code origins in documentation and comments.
 - Ensure all scripts and services are stateless and reproducible.
 - Prioritize code clarity, modularity, and testability.

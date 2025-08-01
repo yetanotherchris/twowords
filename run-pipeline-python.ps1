@@ -141,10 +141,13 @@ Invoke-LocalPipelineStep "Calculate City Indices" "calculate-indices"
 # Step 5: Optimize word placement
 Invoke-LocalPipelineStep "Optimize Word List" "optimize"
 
-# Step 6: Verify mapping correctness
+# Step 6: Shuffle words to prevent alphabetical clustering
+Invoke-LocalPipelineStep "Shuffle Words" "shuffle"
+
+# Step 7: Verify mapping correctness
 Invoke-LocalPipelineStep "Verify Indices" "verify"
 
-# Step 7: Generate final zip file
+# Step 8: Generate final zip file
 Invoke-LocalPipelineStep "Generate ZIP File" "zip"
 
 # Verify words.zip was created

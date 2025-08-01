@@ -20,16 +20,20 @@ else:
     WORDS_ZIP = os.path.join(ROOT, "words.zip")  # Root level like old script
 
 
-def generate_popular_list():
+def generate_popular_list(cities_only=False):
     popularity = WordPopularity(WORDS_DIR)
-    words = popularity.create_popular_words()
+    
+    if cities_only:
+        words = popularity.create_cities_only_words()
+        print(f"Cities-only word list written to {WORDS_TXT}")
+    else:
+        words = popularity.create_popular_words()
+        print(f"Popular word list written to {WORDS_TXT}")
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     with open(WORDS_TXT, "w", encoding="utf-8") as f:
         f.write("\n".join(words))
-
-    print(f"Popular word list written to {WORDS_TXT}")
 
 
 def filter_words_for_polygon():
@@ -63,21 +67,23 @@ def show_steps():
     print()
     print("Local Usage:")
     print("1. python twowords_cli.py download-polygon")
-    print("2. python twowords_cli.py popular")
+    print("2. python twowords_cli.py popular [--cities-only]")
     print("3. python twowords_cli.py filter")
     print("4. python twowords_cli.py calculate-indices")
     print("5. python twowords_cli.py optimize")
-    print("6. python twowords_cli.py verify")
-    print("7. python twowords_cli.py zip")
+    print("6. python twowords_cli.py shuffle")
+    print("7. python twowords_cli.py verify")
+    print("8. python twowords_cli.py zip")
     print()
     print("Docker Usage:")
     print("1. docker run --rm -v $(pwd)/data/output:/output twowords-data download-polygon")
-    print("2. docker run --rm -v $(pwd)/data/output:/output twowords-data popular")
+    print("2. docker run --rm -v $(pwd)/data/output:/output twowords-data popular [--cities-only]")
     print("3. docker run --rm -v $(pwd)/data/output:/output twowords-data filter")
     print("4. docker run --rm -v $(pwd)/data/output:/output twowords-data calculate-indices")
     print("5. docker run --rm -v $(pwd)/data/output:/output twowords-data optimize")
-    print("6. docker run --rm -v $(pwd)/data/output:/output twowords-data verify")
-    print("7. docker run --rm -v $(pwd)/data/output:/output twowords-data zip")
+    print("6. docker run --rm -v $(pwd)/data/output:/output twowords-data shuffle")
+    print("7. docker run --rm -v $(pwd)/data/output:/output twowords-data verify")
+    print("8. docker run --rm -v $(pwd)/data/output:/output twowords-data zip")
     print()
     print("Each step depends on the previous ones. Run them in this exact order.")
     print("Output files are saved to data/output/ directory.")
@@ -88,9 +94,11 @@ def main():
     subparsers = parser.add_subparsers(dest="command")
 
     subparsers.add_parser("steps", help="Show the correct order of pipeline steps")
-    subparsers.add_parser("popular", help="Generate popular list of words")
+    popular_parser = subparsers.add_parser("popular", help="Generate popular list of words")
+    popular_parser.add_argument("--cities-only", action="store_true", help="Only fill indices for major cities (faster, smaller output)")
     subparsers.add_parser("filter", help="Filter words for polygon (mark out-of-bounds indices)")
     subparsers.add_parser("optimize", help="Optimize word list placing best words at population centers")
+    subparsers.add_parser("shuffle", help="Shuffle words to prevent alphabetical clustering while preserving polygon filtering")
     subparsers.add_parser("calculate-indices", help="Calculate indices for major UK cities")
     subparsers.add_parser("verify", help="Verify mapping correctness")
     subparsers.add_parser("zip", help="Generate words.zip from output/words.txt")
@@ -102,29 +110,42 @@ def main():
         show_steps()
 
     elif args.command == "popular":
-        generate_popular_list()
+        generate_popular_list(cities_only=args.cities_only)
 
     elif args.command == "filter":
         PolygonUtils(ROOT).ensure_polygon()
         filter_words_for_polygon()
 
     elif args.command == "optimize":
-        import subprocess
         import sys
-        script_path = os.path.join(os.path.dirname(__file__), "twowords_utils", "optimize_word_list.py")
-        subprocess.run([sys.executable, script_path])
+        import os
+        # Add the parent directory to the path so twowords_utils can be imported
+        sys.path.insert(0, os.path.dirname(__file__))
+        from twowords_utils.optimize_word_list import optimize_words
+        optimize_words()
 
     elif args.command == "calculate-indices":
+        import sys
+        import os
+        # Add the parent directory to the path so twowords_utils can be imported
+        sys.path.insert(0, os.path.dirname(__file__))
+        from twowords_utils.calculate_popular_indices import main as calc_main
+        calc_main()
+
+    elif args.command == "shuffle":
         import subprocess
         import sys
-        script_path = os.path.join(os.path.dirname(__file__), "twowords_utils", "calculate_popular_indices.py")
+        import os
+        script_path = os.path.join(os.path.dirname(__file__), "twowords_utils", "shuffle_words.py")
         subprocess.run([sys.executable, script_path])
 
     elif args.command == "verify":
-        import subprocess
         import sys
-        script_path = os.path.join(os.path.dirname(__file__), "twowords_utils", "verify_indices.py")
-        subprocess.run([sys.executable, script_path])
+        import os
+        # Add the parent directory to the path so twowords_utils can be imported
+        sys.path.insert(0, os.path.dirname(__file__))
+        from twowords_utils.verify_indices import main as verify_main
+        verify_main()
 
     elif args.command == "zip":
         generate_zip()

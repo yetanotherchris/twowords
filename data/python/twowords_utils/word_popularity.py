@@ -60,38 +60,47 @@ class WordPopularity:
         return True
 
     def load_words_from_zip(self, zip_path: str) -> List[str]:
-        """Load words from curated English word lists, with fallback to zip file."""
+        """Load words from Kaggle CSV in zip file."""
         
-        # Try to load from Peter Norvig's curated English word list (highest quality)
-        norvig_file = os.path.join(self.words_dir, 'norvig-word-list.txt')
-        try:
-            with open(norvig_file, 'r', encoding='utf-8') as f:
-                norvig_words = [line.strip().lower() for line in f if line.strip()]
-            
-            # Apply basic filtering to Norvig's already-clean list
-            filtered_words = []
-            for word in norvig_words:
-                # Keep words in a reasonable range for memorability
-                if len(word) < 2 or len(word) > 10:
-                    continue
+        # Load from Kaggle CSV in zip file (primary source)
+        kaggle_zip_path = os.path.join(self.words_dir, 'kaggle.zip')
+        if os.path.exists(kaggle_zip_path):
+            try:
+                with zipfile.ZipFile(kaggle_zip_path, 'r') as zip_file:
+                    with zip_file.open('ngram_freq.csv') as csv_file:
+                        csv_content = csv_file.read().decode('utf-8')
+                        reader = csv.DictReader(csv_content.splitlines())
+                        
+                        filtered_words = []
+                        for row in reader:
+                            word = row['word'].strip().lower()
+                            
+                            # Basic filtering
+                            if len(word) < 2 or len(word) > 12:
+                                continue
+                            if not word.isalpha():
+                                continue
+                            if not self.is_valid_english_word(word):
+                                continue
+                            if not self.is_clearly_english_word(word):
+                                continue
+                                
+                            filtered_words.append(word)
+                            
+                            # Stop when we have enough words
+                            if len(filtered_words) >= WORDS_NEEDED * 2:  # Get extra for variety
+                                break
                 
-                # Basic validation (Norvig's list should already be clean)
-                if not self.is_valid_english_word(word):
-                    continue
-                    
-                filtered_words.append(word)
-            
-            print(f"Loaded {len(filtered_words):,} quality English words from Norvig's curated list")
-            return filtered_words
-            
-        except FileNotFoundError:
-            print(f"Norvig word list not found: {norvig_file}")
-            print("Falling back to zip file...")
+                print(f"Loaded {len(filtered_words):,} quality words from Kaggle CSV")
+                return filtered_words
+                
+            except Exception as e:
+                print(f"Error loading from Kaggle zip: {e}")
         
-        # Fallback to zip file
+        # Fallback to regular zip file (if provided)
         try:
             with zipfile.ZipFile(zip_path, 'r') as zip_file:
-                # Look for the first text file in the zip
+                # Look for text files in the zip
                 text_files = [f for f in zip_file.namelist() if f.endswith('.txt')]
                 if not text_files:
                     raise FileNotFoundError("No text files found in zip")
@@ -348,6 +357,7 @@ class WordPopularity:
         important_indices_list = sorted(list(important_indices))
         print(f"Placing FOOD DISHES at {len(important_indices_list)} important indices...")
         
+        fallback_index = 0  # Track which non-food word to use next for fallbacks
         for i, idx in enumerate(important_indices_list):
             if idx < WORDS_NEEDED and i < len(food_words):
                 word = food_words[i].word
@@ -355,12 +365,13 @@ class WordPopularity:
                 used_words.add(word)
                 print(f"  Index {idx:6d}: '{word}' (food dish, score: {food_words[i].score:.1f})")
             elif idx < WORDS_NEEDED:
-                # Fallback to best non-food word if we run out of food dishes (shouldn't happen)
-                if non_food_words:
-                    word = non_food_words[0].word
+                # Fallback to best non-food word if we run out of food dishes
+                if fallback_index < len(non_food_words):
+                    word = non_food_words[fallback_index].word
                     optimized[idx] = word
                     used_words.add(word)
-                    print(f"  Index {idx:6d}: '{word}' (fallback, score: {non_food_words[0].score:.1f})")
+                    print(f"  Index {idx:6d}: '{word}' (fallback, score: {non_food_words[fallback_index].score:.1f})")
+                    fallback_index += 1  # Move to next non-food word
         
         # SECOND: Fill all remaining positions with the best unused words (food + non-food)
         print("Filling remaining positions with best unused words...")
@@ -401,16 +412,21 @@ class WordPopularity:
                 wn.download('oewn:2023')
                 wn_en = wn.Wordnet('oewn:2023')
 
-            kaggle_csv_path = os.path.join(self.words_dir, 'kaggle-extracted', 'ngram_freq.csv')
+            kaggle_zip_path = os.path.join(self.words_dir, 'kaggle.zip')
             words = []
-            if os.path.exists(kaggle_csv_path):
-                with open(kaggle_csv_path, 'r', encoding='utf-8') as csvfile:
-                    reader = csv.DictReader(csvfile)
-                    for i, row in enumerate(reader):
-                        if i >= 50000:
-                            break
-                        word = row['word'].strip().lower()
-                        words.append(word)
+            if os.path.exists(kaggle_zip_path):
+                try:
+                    with zipfile.ZipFile(kaggle_zip_path, 'r') as zip_file:
+                        with zip_file.open('ngram_freq.csv') as csv_file:
+                            csv_content = csv_file.read().decode('utf-8')
+                            reader = csv.DictReader(csv_content.splitlines())
+                            for i, row in enumerate(reader):
+                                if i >= 50000:
+                                    break
+                                word = row['word'].strip().lower()
+                                words.append(word)
+                except Exception as e:
+                    print(f"Error reading Kaggle zip for common nouns: {e}")
             
             common_nouns = set()
             for word in tqdm(words, desc="Finding common nouns"):
@@ -488,22 +504,34 @@ class WordPopularity:
                         seen.add(word)
                         base_words.append(word)
 
-                # Fill remaining words from Kaggle CSV
-                kaggle_csv_path = os.path.join(self.words_dir, 'kaggle-extracted', 'ngram_freq.csv')
+                # Fill remaining words from Kaggle CSV (from zip file)
+                kaggle_zip_path = os.path.join(self.words_dir, 'kaggle.zip')
                 kaggle_count = 0
-                if os.path.exists(kaggle_csv_path):
-                    with open(kaggle_csv_path, 'r', encoding='utf-8') as csvfile:
-                        reader = csv.DictReader(csvfile)
-                        for row in reader:
-                            word = row['word'].strip().lower()
-                            if not word or word in seen:
-                                continue
-                            seen.add(word)
-                            base_words.append(word)
-                            kaggle_count += 1
-                            if len(base_words) >= WORDS_NEEDED:
-                                break
-                    print(f"Added {kaggle_count} words from Kaggle CSV")
+                if os.path.exists(kaggle_zip_path):
+                    try:
+                        with zipfile.ZipFile(kaggle_zip_path, 'r') as zip_file:
+                            with zip_file.open('ngram_freq.csv') as csv_file:
+                                csv_content = csv_file.read().decode('utf-8')
+                                reader = csv.DictReader(csv_content.splitlines())
+                                for row in reader:
+                                    word = row['word'].strip().lower()
+                                    if not word or word in seen:
+                                        continue
+                                    # Apply basic word validation
+                                    if len(word) < 2 or len(word) > 12:
+                                        continue
+                                    if not word.isalpha():
+                                        continue
+                                    if not self.is_valid_english_word(word):
+                                        continue
+                                    seen.add(word)
+                                    base_words.append(word)
+                                    kaggle_count += 1
+                                    if len(base_words) >= WORDS_NEEDED:
+                                        break
+                        print(f"Added {kaggle_count} words from Kaggle CSV (from zip)")
+                    except Exception as e:
+                        print(f"Error reading Kaggle zip file: {e}")
 
         words = base_words[:WORDS_NEEDED] if len(base_words) >= WORDS_NEEDED else base_words
         print(f"Using {len(words)} words for optimization")
@@ -517,3 +545,120 @@ class WordPopularity:
         print(f"Optimized word list with {len(optimized_words)} words")
         
         return optimized_words
+
+    def create_cities_only_words(self):
+        """
+        Generate a smaller word list that only covers major UK cities and populated areas.
+        This fills all the 2-mile radius coverage indices for each city with quality words.
+        """
+        print("Starting cities-only word generation...")
+        
+        # Load important indices (all city coverage indices within 2-mile radius)
+        important_indices_path = os.path.join(self.words_dir, 'important_indices.txt')
+        important_indices = self.load_important_indices(important_indices_path)
+        print(f"Loaded {len(important_indices)} important city coverage indices")
+        
+        if not important_indices:
+            print("Warning: No important indices found. Creating minimal word list.")
+            return ["placeholder"] * 1000  # Minimal fallback
+        
+        # Load high-quality word sources
+        food_dishes_path = os.path.join(self.words_dir, 'food_dishes_final.txt')
+        food_dishes = self.load_wordlist(food_dishes_path)
+        print(f"Loaded {len(food_dishes)} food dishes")
+
+        common_words_path = os.path.join(self.words_dir, 'common_words.txt')
+        common_words = self.load_wordlist(common_words_path)
+        print(f"Loaded {len(common_words)} common words")
+        
+        # Combine high-quality words, prioritizing 4-7 character words
+        all_quality_words = []
+        
+        # Add food dishes (prioritized for cities)
+        for word in food_dishes:
+            if 4 <= len(word) <= 7 and word.isalpha():
+                all_quality_words.append(word)
+        
+        # Add common words
+        for word in common_words:
+            if word not in all_quality_words and 4 <= len(word) <= 7 and word.isalpha():
+                all_quality_words.append(word)
+        
+        # Load more words from Kaggle CSV if needed
+        kaggle_zip_path = os.path.join(self.words_dir, 'kaggle.zip')
+        if os.path.exists(kaggle_zip_path):
+            try:
+                with zipfile.ZipFile(kaggle_zip_path, 'r') as zip_file:
+                    with zip_file.open('ngram_freq.csv') as csv_file:
+                        csv_content = csv_file.read().decode('utf-8')
+                        reader = csv.DictReader(csv_content.splitlines())
+                        
+                        for row in reader:
+                            word = row['word'].strip().lower()
+                            if (word not in all_quality_words and 
+                                4 <= len(word) <= 7 and 
+                                word.isalpha() and 
+                                self.is_valid_english_word(word)):
+                                all_quality_words.append(word)
+                                
+                                # Stop when we have enough quality words
+                                if len(all_quality_words) >= len(important_indices) * 2:
+                                    break
+            except Exception as e:
+                print(f"Error loading additional words from Kaggle CSV: {e}")
+        
+        print(f"Collected {len(all_quality_words)} quality 4-7 character words")
+        
+        # Calculate how many words we need
+        max_index = max(important_indices) if important_indices else 0
+        words_needed = max_index + 1
+        print(f"Need {words_needed:,} words to cover highest city index ({max_index:,})")
+        
+        # Create word list with placeholders
+        cities_words = ["UNUSED"] * words_needed
+        
+        # Shuffle words for distribution across cities
+        import random
+        random.seed(42)  # Reproducible shuffling
+        random.shuffle(all_quality_words)
+        
+        # Place words at ALL important indices (full city coverage)
+        word_index = 0
+        indices_filled = 0
+        for city_index in sorted(important_indices):
+            if word_index < len(all_quality_words):
+                cities_words[city_index] = all_quality_words[word_index]
+                word_index += 1
+                indices_filled += 1
+                # Only print first few and last few to avoid spam
+                if indices_filled <= 5 or indices_filled > len(important_indices) - 5:
+                    print(f"  City index {city_index:6d}: '{all_quality_words[word_index-1]}'")
+                elif indices_filled == 6:
+                    print("  ... (continuing to fill all city indices)")
+            else:
+                # If we run out of quality words, cycle through them again
+                cities_words[city_index] = all_quality_words[word_index % len(all_quality_words)]
+                word_index += 1
+                indices_filled += 1
+        
+        print(f"Cities-only word list created with {len(cities_words):,} total positions")
+        print(f"Actual words placed at {indices_filled} city locations")
+        print(f"Unused positions: {cities_words.count('UNUSED'):,}")
+        
+        return cities_words
+
+    def optimize_word_placement(self, filtered_words: List[str]) -> List[str]:
+        """Optimize placement of filtered words at population centers."""
+        # Load required data
+        food_dishes = self.load_wordlist(os.path.join(self.words_dir, "food_dishes_final.txt"))
+        large_common_words = set(self.load_wordlist(os.path.join(self.words_dir, "common_words.txt")))
+        important_indices_file = os.path.join(self.words_dir, "important_indices.txt")
+        important_indices = self.load_important_indices(important_indices_file)
+        
+        print(f"Starting word placement optimization...")
+        print(f"Food dishes available: {len(food_dishes)}")
+        print(f"Large common words available: {len(large_common_words)}")
+        print(f"Important indices: {len(important_indices)}")
+        
+        # Use the existing optimize_word_list method
+        return self.optimize_word_list(filtered_words, important_indices, food_dishes, large_common_words)
