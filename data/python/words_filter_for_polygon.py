@@ -100,4 +100,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "download-polygon":
+        download_polygon()
+        print("Downloaded UK polygon to data/polygons/uk_polygon.wkt.zip")
+    else:
+        main()

@@ -195,8 +195,7 @@ def save_optimized_words(words: List[str], output_path: str):
 def main():
     print("TwoWords API - Word List Optimizer\n" + "=" * 40)
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    parent_dir = os.path.dirname(script_dir)
-    data_dir = os.path.join(parent_dir, '..', 'data')
+    data_dir = os.path.join(script_dir, '..', '..', 'data')
     words_dir = os.path.join(data_dir, 'words')
     output_dir = os.path.join(data_dir, 'output')
     food_dishes_path = os.path.join(words_dir, 'food_dishes_final.txt')

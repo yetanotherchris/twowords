@@ -6,8 +6,7 @@ from tqdm import tqdm
 
 # Set words_dir relative to the new data/words directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(script_dir)
-data_dir = os.path.join(parent_dir, '..', 'data')
+data_dir = os.path.join(script_dir, '..', '..', 'data')
 words_dir = os.path.join(data_dir, 'words')
 norvig_file = os.path.join(words_dir, 'norvig-word-list.txt')
 output_file = os.path.join(words_dir, 'common_nouns.txt')
