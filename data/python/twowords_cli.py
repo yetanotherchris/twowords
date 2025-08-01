@@ -12,7 +12,7 @@ if os.path.exists("/python") and os.path.exists("/words"):
     WORDS_TXT = "/output/words.txt"
     WORDS_ZIP = "/expanded_words.zip"  # Root level like old script
 else:
-    # Get the repo root: data/python_new/twowords_cli.py -> ../../ -> repo root
+    # Get the repo root: data/python/twowords_cli.py -> ../../ -> repo root
     ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     WORDS_DIR = os.path.join(ROOT, "data", "words")
     OUTPUT_DIR = os.path.join(ROOT, "data", "output")
@@ -54,10 +54,40 @@ def generate_zip():
     print(f"Created zip file: {WORDS_ZIP}")
 
 
+def show_steps():
+    """Show the correct order of steps to run the pipeline."""
+    print("TwoWords Data Pipeline - Correct Order of Steps")
+    print("=" * 50)
+    print()
+    print("Run these commands in order:")
+    print()
+    print("Local Usage:")
+    print("1. python twowords_cli.py download-polygon")
+    print("2. python twowords_cli.py popular")
+    print("3. python twowords_cli.py filter")
+    print("4. python twowords_cli.py calculate-indices")
+    print("5. python twowords_cli.py optimize")
+    print("6. python twowords_cli.py verify")
+    print("7. python twowords_cli.py zip")
+    print()
+    print("Docker Usage:")
+    print("1. docker run --rm -v $(pwd)/data/output:/output twowords-data download-polygon")
+    print("2. docker run --rm -v $(pwd)/data/output:/output twowords-data popular")
+    print("3. docker run --rm -v $(pwd)/data/output:/output twowords-data filter")
+    print("4. docker run --rm -v $(pwd)/data/output:/output twowords-data calculate-indices")
+    print("5. docker run --rm -v $(pwd)/data/output:/output twowords-data optimize")
+    print("6. docker run --rm -v $(pwd)/data/output:/output twowords-data verify")
+    print("7. docker run --rm -v $(pwd)/data/output:/output twowords-data zip")
+    print()
+    print("Each step depends on the previous ones. Run them in this exact order.")
+    print("Output files are saved to data/output/ directory.")
+
+
 def main():
     parser = argparse.ArgumentParser(description="TwoWords CLI Utility")
     subparsers = parser.add_subparsers(dest="command")
 
+    subparsers.add_parser("steps", help="Show the correct order of pipeline steps")
     subparsers.add_parser("popular", help="Generate popular list of words")
     subparsers.add_parser("filter", help="Filter words for polygon (mark out-of-bounds indices)")
     subparsers.add_parser("optimize", help="Optimize word list placing best words at population centers")
@@ -68,7 +98,10 @@ def main():
 
     args = parser.parse_args()
 
-    if args.command == "popular":
+    if args.command == "steps":
+        show_steps()
+
+    elif args.command == "popular":
         generate_popular_list()
 
     elif args.command == "filter":

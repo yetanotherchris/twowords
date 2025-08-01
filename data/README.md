@@ -11,20 +11,23 @@ The easiest way to run the data pipeline is using Docker:
 
 ```bash
 # Build the Python CLI image
-docker build -f data/Dockerfile -t twowords-cli .
+docker build -f data/Dockerfile -t twowords-data .
 
-mkdir temp
+mkdir -p data/output
 
-# Generate curated word list
-docker run --rm -v $(pwd)/temp:/output twowords-cli curate
+# Show the correct order of steps
+docker run --rm twowords-data steps
 
-# Apply geographic filtering
-docker run --rm -v $(pwd)/temp:/output twowords-cli filter
+# Run the complete pipeline in order:
+docker run --rm -v $(pwd)/data/output:/output twowords-data download-polygon
+docker run --rm -v $(pwd)/data/output:/output twowords-data popular
+docker run --rm -v $(pwd)/data/output:/output twowords-data filter
+docker run --rm -v $(pwd)/data/output:/output twowords-data calculate-indices
+docker run --rm -v $(pwd)/data/output:/output twowords-data optimize
+docker run --rm -v $(pwd)/data/output:/output twowords-data verify
+docker run --rm -v $(pwd)/data/output:/output twowords-data zip
 
-# Create compressed output
-docker run --rm -v $(pwd)/temp:/output twowords-cli zip
-
-# All output files will be written to your local data/temp directory
+# All output files will be written to your local data/output directory
 ```
 
 ### Using Python directly
@@ -34,9 +37,18 @@ If you have Python 3.11+ and the required dependencies installed:
 ```bash
 cd data/python
 pip install -r requirements.txt
-python twowords_cli.py curate      # Generate curated word list
-python twowords_cli.py filter      # Apply geographic filtering
-python twowords_cli.py zip         # Create words.zip from the output
+
+# Show the correct order of steps
+python twowords_cli.py steps
+
+# Run the complete pipeline in order:
+python twowords_cli.py download-polygon
+python twowords_cli.py popular
+python twowords_cli.py filter
+python twowords_cli.py calculate-indices
+python twowords_cli.py optimize
+python twowords_cli.py verify
+python twowords_cli.py zip
 ```
 
 ## CLI Usage
