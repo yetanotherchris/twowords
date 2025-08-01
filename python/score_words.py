@@ -9,6 +9,7 @@ This script:
 4. Creates an optimized list of exactly 110,001 words
 """
 
+import os
 import zipfile
 import re
 from collections import Counter
@@ -70,8 +71,9 @@ def load_words_from_zip(zip_path: str) -> List[str]:
     """Load words from curated English word lists in word-data directory."""
     
     # Try to load from Peter Norvig's curated English word list (highest quality)
-    word_data_dir = '../word-data/'
-    norvig_file = word_data_dir + 'norvig-word-list.txt'
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    word_data_dir = os.path.join(script_dir, 'word-data')
+    norvig_file = os.path.join(word_data_dir, 'norvig-word-list.txt')
     try:
         with open(norvig_file, 'r', encoding='utf-8') as f:
             norvig_words = [line.strip().lower() for line in f if line.strip()]
@@ -379,58 +381,58 @@ def main():
     print("=" * 50)
     
     # Load current words
-    print("Loading words from word-data/expanded_words.txt...")
+    word_data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'word-data')
+    expanded_words_path = os.path.join(word_data_dir, 'expanded_words.txt')
+    expanded_words_zip_path = os.path.join(word_data_dir, 'expanded_words.zip')
+    food_dishes_path = os.path.join(word_data_dir, 'food_dishes_final.txt')
+    important_indices_path = os.path.join(word_data_dir, 'important_indices.txt')
+    common_words_path = os.path.join(word_data_dir, 'common_words.txt')
+    output_file = os.path.join(word_data_dir, 'optimized_words.txt')
+    sorted_output_file = os.path.join(word_data_dir, 'optimized_words_sorted_by_score.txt')
+
+    print(f"Loading words from {expanded_words_path}...")
     try:
-        with open('../word-data/expanded_words.txt', 'r', encoding='utf-8') as f:
+        with open(expanded_words_path, 'r', encoding='utf-8') as f:
             words = [line.strip().lower() for line in f if line.strip()]
     except FileNotFoundError:
-        print("expanded_words.txt not found in word-data, trying zip file...")
-        words = load_words_from_zip('../expanded_words.zip')
+        print(f"{expanded_words_path} not found, trying zip file...")
+        words = load_words_from_zip(expanded_words_zip_path)
     print(f"Loaded {len(words):,} words")
-    
-    # Load food dishes for priority placement
+
     print("Loading food dishes for priority placement...")
-    food_dishes = load_food_dishes()
+    try:
+        with open(food_dishes_path, 'r', encoding='utf-8') as f:
+            food_dishes = [line.strip().lower() for line in f if line.strip()]
+    except FileNotFoundError:
+        print(f"Warning: {food_dishes_path} not found, skipping food priority")
+        food_dishes = []
     print(f"Loaded {len(food_dishes)} food dishes")
-    
-    # Load important indices
+
     print("Loading important population indices...")
-    important_indices = load_important_indices('important_indices.txt')
+    important_indices = load_important_indices(important_indices_path)
     print(f"Loaded {len(important_indices)} important indices")
-    
-    # Load large common words set for scoring
-    COMMON_WORDS_FILE = '../word-data/common_words.txt'
+
+    print("Loading large common words set for scoring...")
     global large_common_words
-    large_common_words = load_common_words(COMMON_WORDS_FILE)
-    
-    # Optimize the word list
+    large_common_words = load_common_words(common_words_path)
+
     optimized_words = optimize_word_list(words, important_indices, food_dishes)
-    
-    # Save results
-    output_file = 'optimized_words.txt'
     save_optimized_words(optimized_words, output_file)
     print(f"Saved optimized word list to {output_file}")
 
-    # Always create expanded_words.zip in the root folder, containing optimized_words.txt as expanded_words.txt
-    import zipfile, os
     # Always create expanded_words.zip in the workspace root (parent of python/)
     script_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = os.path.dirname(script_dir)
     zip_path = os.path.join(root_dir, 'expanded_words.zip')
-    # Write optimized_words.txt into the zip as expanded_words.txt
     with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
         zipf.write(output_file, arcname='expanded_words.txt')
     print(f"Created {zip_path} containing expanded_words.txt")
 
-    # No longer delete other zip files in the root folder
-    
-    # Show some statistics
     print("\nOptimization Results:")
     print(f"Total words in optimized list: {len(optimized_words):,}")
-    
-    # Sample what words are at important indices
+
     print(f"\nFOOD DISHES at major population centres:")
-    important_list = sorted(list(important_indices))[:15]  # Show first 15
+    important_list = sorted(list(important_indices))[:15]
     food_set = set(food_dishes)
     for idx in important_list:
         if idx < len(optimized_words):
@@ -438,17 +440,14 @@ def main():
             is_food = word in food_set
             status = "🍽️ FOOD" if is_food else "❌ NON-FOOD"
             print(f"  Index {idx:6d}: '{word}' {status}")
-    
-    # Check food dishes usage at important indices
+
     important_words = [optimized_words[idx] for idx in important_indices if idx < len(optimized_words)]
     food_at_important = sum(1 for word in important_words if word in food_set)
     print(f"\nFood dishes at important indices: {food_at_important}/{len(important_words)} ({food_at_important/len(important_words)*100:.1f}%)")
-    
-    # Check overall food dishes usage
+
     food_count = sum(1 for word in optimized_words[:1000] if word in food_set)
     print(f"Food dishes in top 1000 positions: {food_count}")
-    
-    # Show length distribution
+
     lengths = [len(word) for word in optimized_words[:1000]]
     avg_length = sum(lengths) / len(lengths)
     print(f"\nWord quality (first 1000 words):")
@@ -457,16 +456,15 @@ def main():
     print(f"  Medium words (5-7 chars): {sum(1 for l in lengths if 5 <= l <= 7)}")
     print(f"  Long words (8+ chars): {sum(1 for l in lengths if l >= 8)}")
 
-    # Additionally save a version of the list sorted by score using only valid words
+    # Save a version of the list sorted by score (not alphabetically)
     valid_scored = [
         calculate_word_score(w, food_set)
         for w in optimized_words
         if is_valid_english_word(w)
     ]
     valid_scored.sort(key=lambda ws: ws.score, reverse=True)
-    sorted_output_file = 'optimized_words_sorted.txt'
     save_optimized_words([ws.word for ws in valid_scored], sorted_output_file)
-    print(f"Saved sorted word list to {sorted_output_file}")
+    print(f"Saved score-sorted word list to {sorted_output_file}")
 
 if __name__ == "__main__":
     main()

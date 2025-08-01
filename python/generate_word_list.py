@@ -22,7 +22,6 @@ INVALID_POINT = "INVALID_POINT"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 WORD_DIR = os.path.join(SCRIPT_DIR, "word-data")
-WORD_FILE = os.path.join(WORD_DIR, "norvig-word-list.txt")
 POLY_WKT_ZIP = os.path.join(WORD_DIR, "uk_polygon.wkt.zip")
 POLY_WKT_URL = "https://raw.githubusercontent.com/johan/world.geo.json/master/countries/GBR.geo.json"
 OUTPUT_ZIP = os.path.join(ROOT, "expanded_words.zip")
@@ -46,18 +45,6 @@ def load_polygon():
     return wkt.loads(data)
 
 
-def load_words(n):
-    words = []
-    with open(WORD_FILE, "r", encoding="utf-8") as f:
-        for line in f:
-            w = line.strip()
-            if w:
-                words.append(w)
-            if len(words) >= n:
-                break
-    if len(words) < n:
-        raise RuntimeError("Not enough words in source list")
-    return words
 
 
 def lat_intersects(poly, lat):
@@ -73,19 +60,10 @@ def lon_intersects(poly, lon):
 def main():
     poly = load_polygon()
     max_count = max(LAT_COUNT, LON_COUNT)
-    # Load optimized words, preferring the sorted list produced by score_words.py
-    sorted_words_path = os.path.join(SCRIPT_DIR, "optimized_words_sorted.txt")
-    if not os.path.exists(sorted_words_path):
-        sorted_words_path = os.path.join(WORD_DIR, "optimized_words_sorted.txt")
+    words_file = os.path.join(WORD_DIR, "optimized_words_sorted_by_score.txt")
 
-    if os.path.exists(sorted_words_path):
-        words_file = sorted_words_path
-    else:
-        words_file = os.path.join(SCRIPT_DIR, "optimized_words.txt")
-        if not os.path.exists(words_file):
-            # Fallback to word-data/optimized_words.txt
-            words_file = os.path.join(WORD_DIR, "optimized_words.txt")
-
+    if not os.path.exists(words_file):
+        raise FileNotFoundError(f"Word list file not found: {words_file}\nPlease generate it using optimize_words.py or score_words.py and place it in the correct location.")
     print(f"Loading base words from {words_file}...")
     with open(words_file, "r", encoding="utf-8") as f:
         base_words = [line.strip() for line in f if line.strip()]
@@ -108,10 +86,19 @@ def main():
         raise RuntimeError(f"Output word list has {actual_count} entries, expected {expected_count}.")
 
     txt_content = "\n".join(results)
+    # Write expanded_words.txt for inspection
+    expanded_txt_path = os.path.join(ROOT, "expanded_words.txt")
+    with open(expanded_txt_path, "w", encoding="utf-8") as f:
+        f.write(txt_content)
+
     with zipfile.ZipFile(OUTPUT_ZIP, "w", compression=zipfile.ZIP_DEFLATED) as z:
         z.writestr("expanded_words.txt", txt_content)
 
-    print(f"Wrote {OUTPUT_ZIP}")
+    print(f"Wrote {OUTPUT_ZIP} and {expanded_txt_path}")
+
+    # Verify a range of words in expanded_words.txt
+    sample_words = [w for w in results if w != INVALID_POINT][:20]
+    print("Sample of first 20 valid words:", sample_words)
 
 
 if __name__ == "__main__":
