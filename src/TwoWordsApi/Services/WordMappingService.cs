@@ -20,24 +20,24 @@ public class WordMappingService : IWordMappingService
 
     public WordMappingService(IWebHostEnvironment environment)
     {
-        // Determine the correct path for expanded_words.zip
+        // Determine the correct path for words.zip
         string zipPath;
         var isInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 
         if (isInContainer)
         {
-            zipPath = "/expanded_words.zip";
+            zipPath = "/words.zip";
         }
         else
         {
             zipPath = Path.GetFullPath(Path.Combine(environment.ContentRootPath,
-                "..", "..", "expanded_words.zip"));
+                "..", "..", "words.zip"));
         }
 
         // Verify the file exists
         if (!File.Exists(zipPath))
         {
-            throw new FileNotFoundException($"expanded_words.zip not found at {zipPath}. " +
+            throw new FileNotFoundException($"words.zip not found at {zipPath}. " +
                 $"ContentRootPath: {environment.ContentRootPath}, " +
                 $"IsInContainer: {isInContainer}");
         }
