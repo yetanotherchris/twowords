@@ -12,6 +12,8 @@ This script:
 import os
 import zipfile
 import re
+import wn
+from tqdm import tqdm
 from collections import Counter
 from dataclasses import dataclass
 from typing import List, Set
@@ -256,6 +258,40 @@ def is_simple_word(word: str) -> bool:
     return not any(pattern in word for pattern in difficult_patterns)
 
 def calculate_word_score(word: str, food_dishes: Set[str]) -> WordScore:
+
+    # python-wn WordNet-based scoring
+    # Download WordNet if not present
+    try:
+        wn_en = wn.Wordnet('oewn:2023')
+    except Exception:
+        wn.download('oewn:2023')
+        wn_en = wn.Wordnet('oewn:2023')
+
+    # Helper: is animal
+    def is_animal(w):
+        for syn in wn_en.synsets(w):
+            for h in syn.hypernyms():
+                if any('animal' in lemma for lemma in h.lemmas()):
+                    return True
+        return False
+
+    # Helper: is place name (city/country)
+    def is_place(w):
+        for syn in wn_en.synsets(w):
+            for h in syn.hypernyms():
+                names = h.lemmas()
+                if any(x in names for x in ['city', 'country', 'location']):
+                    return True
+        return False
+
+    # Helper: is noun
+    def is_noun(w):
+        return any(s.pos == 'n' for s in wn_en.synsets(w))
+
+    # Helper: is adjective
+    def is_adj(w):
+        return any(s.pos == 'a' for s in wn_en.synsets(w))
+
     """Calculate a desirability score for a word (higher = better)."""
     length = len(word)
     is_common = is_common_word(word)
@@ -270,6 +306,8 @@ def calculate_word_score(word: str, food_dishes: Set[str]) -> WordScore:
     # Length penalty (prefer shorter words)
     if length <= 3:
         score += 50  # Very short words get bonus
+    elif length <= 4:
+        score += 40  # Short words get bonus
     elif length <= 5:
         score += 20  # Short words get bonus
     elif length <= 7:
@@ -295,6 +333,40 @@ def calculate_word_score(word: str, food_dishes: Set[str]) -> WordScore:
     if length == 1 and word not in ['a', 'i']:
         score -= 30
 
+    # NLTK WordNet-based prioritization
+    if is_animal(word):
+        score += 30
+    if is_place(word):
+        score += 25
+    if is_noun(word):
+        score += 20
+    if is_adj(word):
+        score += 15
+
+    # Prefer singular nouns over plurals
+    # Penalize likely plurals (ending in 's', 'es', 'ies')
+    if length > 3:
+        if word.endswith('ies'):
+            score -= 15
+        elif word.endswith('es'):
+            score -= 10
+        elif word.endswith('s'):
+            score -= 8
+        else:
+            score += 8  # Likely singular noun
+
+    # Prefer nouns over verbs (simple heuristic)
+    # Penalize likely verbs (ending in 'ing', 'ed')
+    if word.endswith('ing'):
+        score -= 12
+    if word.endswith('ed'):
+        score -= 8
+
+    # Bonus for matching common noun list (proxy: common_words.txt)
+    # If the word is in large_common_words and not a verb/plural, add bonus
+    if is_large_common and not word.endswith(('ing', 'ed', 's', 'es', 'ies')):
+        score += 10
+
     return WordScore(word, score, length, is_common, is_simple)
 
 def optimize_word_list(words: List[str], important_indices: Set[int], food_dishes: List[str]) -> List[str]:
@@ -306,7 +378,7 @@ def optimize_word_list(words: List[str], important_indices: Set[int], food_dishe
     global large_common_words
     # Score all words
     print("Scoring words by desirability...")
-    scored_words = [calculate_word_score(word, food_set) for word in words]
+    scored_words = [calculate_word_score(word, food_set) for word in tqdm(words, desc="Scoring", ncols=80)]
     
     # Sort by score (best first)
     scored_words.sort(key=lambda x: x.score, reverse=True)
@@ -390,14 +462,20 @@ def main():
     output_file = os.path.join(word_data_dir, 'optimized_words.txt')
     sorted_output_file = os.path.join(word_data_dir, 'optimized_words_sorted_by_score.txt')
 
-    print(f"Loading words from {expanded_words_path}...")
-    try:
-        with open(expanded_words_path, 'r', encoding='utf-8') as f:
+    # Prefer optimized_words.txt if it exists
+    if os.path.exists(output_file):
+        print(f"Loading words from {output_file} (already optimized)...")
+        with open(output_file, 'r', encoding='utf-8') as f:
             words = [line.strip().lower() for line in f if line.strip()]
-    except FileNotFoundError:
-        print(f"{expanded_words_path} not found, trying zip file...")
-        words = load_words_from_zip(expanded_words_zip_path)
-    print(f"Loaded {len(words):,} words")
+    else:
+        print(f"Loading words from {expanded_words_path}...")
+        try:
+            with open(expanded_words_path, 'r', encoding='utf-8') as f:
+                words = [line.strip().lower() for line in f if line.strip()]
+        except FileNotFoundError:
+            print(f"{expanded_words_path} not found, trying zip file...")
+            words = load_words_from_zip(expanded_words_zip_path)
+        print(f"Loaded {len(words):,} words")
 
     print("Loading food dishes for priority placement...")
     try:
@@ -416,9 +494,13 @@ def main():
     global large_common_words
     large_common_words = load_common_words(common_words_path)
 
-    optimized_words = optimize_word_list(words, important_indices, food_dishes)
-    save_optimized_words(optimized_words, output_file)
-    print(f"Saved optimized word list to {output_file}")
+    # Only optimize if not already optimized
+    if not os.path.exists(output_file):
+        optimized_words = optimize_word_list(words, important_indices, food_dishes)
+        save_optimized_words(optimized_words, output_file)
+        print(f"Saved optimized word list to {output_file}")
+    else:
+        optimized_words = words
 
     # Always create expanded_words.zip in the workspace root (parent of python/)
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -456,15 +538,10 @@ def main():
     print(f"  Medium words (5-7 chars): {sum(1 for l in lengths if 5 <= l <= 7)}")
     print(f"  Long words (8+ chars): {sum(1 for l in lengths if l >= 8)}")
 
-    # Save a version of the list sorted by score (not alphabetically)
-    valid_scored = [
-        calculate_word_score(w, food_set)
-        for w in optimized_words
-        if is_valid_english_word(w)
-    ]
-    valid_scored.sort(key=lambda ws: ws.score, reverse=True)
-    save_optimized_words([ws.word for ws in valid_scored], sorted_output_file)
-    print(f"Saved score-sorted word list to {sorted_output_file}")
+    # Save a version of the list with only valid English words (already sorted)
+    valid_sorted = [w for w in optimized_words if is_valid_english_word(w)]
+    save_optimized_words(valid_sorted, sorted_output_file)
+    print(f"Saved valid, score-sorted word list to {sorted_output_file}")
 
 if __name__ == "__main__":
     main()
