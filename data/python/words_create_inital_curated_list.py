@@ -213,7 +213,48 @@ def main():
             return [line.strip().lower() for line in f if line.strip()]
 
     food_dishes = load_wordlist(food_dishes_path)
-    common_nouns = load_wordlist(common_nouns_path)
+
+    # --- Begin: Generate common_nouns.txt dynamically (from words_create_common_nouns.py) ---
+    import wn
+    # Ensure WordNet is available
+    try:
+        wn_en = wn.Wordnet('oewn:2023')
+    except Exception:
+        wn.download('oewn:2023')
+        wn_en = wn.Wordnet('oewn:2023')
+
+    import csv
+    ngram_file = os.path.join(words_dir, 'kaggle-extracted', 'ngram_freq.csv')
+    words = []
+    if os.path.exists(ngram_file):
+        with open(ngram_file, 'r', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for i, row in enumerate(reader):
+                if i >= 50000:
+                    break
+                word = row['word'].strip().lower()
+                words.append(word)
+    common_nouns = set()
+    from tqdm import tqdm
+    for word in tqdm(words, desc="Finding common nouns"):
+        # Only consider single words, not hyphenated or compound
+        if not word.isalpha():
+            continue
+        # Exclude capitalized words (likely proper nouns)
+        if word[0].isupper():
+            continue
+        # Check if word has a noun synset
+        if any(syn.pos == 'n' for syn in wn_en.synsets(word)):
+            if 2 <= len(word) <= 10:
+                common_nouns.add(word)
+    # Write to file
+    with open(common_nouns_path, 'w', encoding='utf-8') as f:
+        for noun in sorted(common_nouns):
+            f.write(noun + '\n')
+    print(f"Wrote {len(common_nouns)} common nouns to {common_nouns_path}")
+    # --- End: Generate common_nouns.txt dynamically ---
+
+    common_nouns = list(common_nouns)
     common_words = load_wordlist(common_words_path)
     seen = set()
     base_words = []
