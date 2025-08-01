@@ -10,14 +10,14 @@ if os.path.exists("/python") and os.path.exists("/words"):
     WORDS_DIR = "/words"
     OUTPUT_DIR = "/output"
     WORDS_TXT = "/output/words.txt"
-    WORDS_ZIP = "/expanded_words.zip"  # Root level like old script
+    WORDS_ZIP = "/words.zip"  # Root level like old script
 else:
     # Get the repo root: data/python/twowords_cli.py -> ../../ -> repo root
     ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     WORDS_DIR = os.path.join(ROOT, "data", "words")
     OUTPUT_DIR = os.path.join(ROOT, "data", "output")
     WORDS_TXT = os.path.join(OUTPUT_DIR, "words.txt")
-    WORDS_ZIP = os.path.join(ROOT, "expanded_words.zip")  # Root level like old script
+    WORDS_ZIP = os.path.join(ROOT, "words.zip")  # Root level like old script
 
 
 def generate_popular_list():

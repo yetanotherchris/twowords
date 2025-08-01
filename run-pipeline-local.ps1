@@ -2,7 +2,7 @@
 #
 # TwoWords Data Pipeline Runner (Local Python Version)
 # This script runs the Python data pipeline steps locally without Docker
-# and then copies the generated words.zip file to the root folder for the API to use.
+# and generates the words.zip file directly in the root folder for the API to use.
 #
 
 param(
@@ -20,7 +20,7 @@ if ($Help) {
     Write-Host "This script will:"
     Write-Host "1. Check if Python and required packages are available"
     Write-Host "2. Run all pipeline steps in the correct order locally"
-    Write-Host "3. Copy the generated words.zip file to the root folder"
+    Write-Host "3. Generate words.zip file in the root folder"
     Write-Host ""
     Write-Host "Requirements:"
     Write-Host "- Python 3.8+ installed and in PATH"
@@ -147,18 +147,16 @@ Invoke-LocalPipelineStep "Verify Indices" "verify"
 # Step 7: Generate final zip file
 Invoke-LocalPipelineStep "Generate ZIP File" "zip"
 
-# Copy words.zip to root folder
+# Verify words.zip was created
 Write-Host ""
-Write-Host "Copying words.zip to root folder..." -ForegroundColor Yellow
+Write-Host "Verifying words.zip was created..." -ForegroundColor Yellow
 
-$sourceZip = "expanded_words.zip"
 $targetZip = "words.zip"
 
-if (Test-Path $sourceZip) {
-    Copy-Item $sourceZip $targetZip -Force
-    Write-Host "Successfully copied $sourceZip to $targetZip" -ForegroundColor Green
+if (Test-Path $targetZip) {
+    Write-Host "Successfully created $targetZip" -ForegroundColor Green
 } else {
-    Write-Host "ERROR: Source file $sourceZip not found!" -ForegroundColor Red
+    Write-Host "ERROR: File $targetZip not found!" -ForegroundColor Red
     Write-Host "The pipeline may have failed to generate the zip file." -ForegroundColor Red
     exit 1
 }

@@ -26,14 +26,14 @@ def main():
         root_dir = args.root_dir or "/"
         output_dir = args.output_dir or "/output"
         input_file = args.input_file or "/output/words.txt"
-        output_zip = "/expanded_words.zip"
+        output_zip = "/words.zip"
     else:
         # Running locally
         script_dir = os.path.dirname(os.path.abspath(__file__))
         root_dir = args.root_dir or os.path.dirname(os.path.dirname(script_dir))
         output_dir = args.output_dir or os.path.join(root_dir, "data", "output")
         input_file = args.input_file or os.path.join(output_dir, "words.txt")
-        output_zip = os.path.join(root_dir, "expanded_words.zip")
+        output_zip = os.path.join(root_dir, "words.zip")
     
     print("TwoWords API - Polygon Filtering")
     print("=" * 50)
@@ -66,7 +66,7 @@ def main():
     
     print(f"Filtered word list written to {output_file}")
     
-    # Create expanded_words.zip in the root (matches old behavior)
+    # Create words.zip in the root (matches old behavior)
     ZipUtils.create_words_zip(output_file, output_zip)
     
     # Statistics

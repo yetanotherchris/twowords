@@ -466,9 +466,9 @@ class WordPopularity:
         large_common_words = self.load_common_words(common_words_path)
         print(f"Loaded {len(large_common_words)} large common words for scoring")
 
-        # Load words from expanded_words files or Norvig list
+        # Load words from words files or Norvig list
         expanded_words_path = os.path.join(self.words_dir, 'expanded_words.txt')
-        expanded_words_zip_path = os.path.join(self.words_dir, 'expanded_words.zip')
+        words_zip_path = os.path.join(self.words_dir, 'words.zip')
         
         # Prefer optimized_words.txt if it exists, otherwise try other sources
         if os.path.exists(expanded_words_path):
@@ -478,7 +478,7 @@ class WordPopularity:
         else:
             print(f"Loading words from zip or Norvig list...")
             try:
-                base_words = self.load_words_from_zip(expanded_words_zip_path)
+                base_words = self.load_words_from_zip(words_zip_path)
             except FileNotFoundError:
                 # Use combination approach from original logic
                 seen = set()

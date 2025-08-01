@@ -121,7 +121,7 @@ GET http://localhost:5000/validate?lat=51.5074&lon=-0.1278
 
 ## Word lists
 
-Word data is loaded from the `expanded_words.zip` archive at the repository root. This file contains curated words from multiple sources including Peter Norvig's English word list, food dishes, and common nouns. Invalid latitude or longitude indices are marked with placeholders so the API can reject out-of-bounds coordinates.
+Word data is loaded from the `words.zip` archive at the repository root. This file contains curated words from multiple sources including Peter Norvig's English word list, food dishes, and common nouns. Invalid latitude or longitude indices are marked with placeholders so the API can reject out-of-bounds coordinates.
 
 ### Word List Generation
 

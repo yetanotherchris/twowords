@@ -29,7 +29,7 @@ Runs the complete data pipeline using Docker containers.
    - optimize
    - verify
    - zip
-3. Copies the generated `expanded_words.zip` to `words.zip` in the root folder
+3. Generates `words.zip` directly in the root folder
 
 ### `run-pipeline-local.ps1` (Local Python Version)
 Runs the complete data pipeline using local Python installation.
@@ -49,7 +49,7 @@ Runs the complete data pipeline using local Python installation.
 **Steps performed:**
 1. Checks Python availability and installs requirements if needed
 2. Runs all pipeline steps locally in order
-3. Copies the generated `expanded_words.zip` to `words.zip` in the root folder
+3. Generates `words.zip` directly in the root folder
 
 ## Pipeline Steps (In Order)
 
@@ -67,8 +67,7 @@ The scripts run these steps in the correct sequence:
 
 Both scripts will:
 - Create/update files in the `data/output/` directory
-- Generate `expanded_words.zip` in the root folder
-- Copy `expanded_words.zip` to `words.zip` for the API to use
+- Generate `words.zip` directly in the root folder for the API to use
 - Display progress and success/error messages
 
 ## API Integration
