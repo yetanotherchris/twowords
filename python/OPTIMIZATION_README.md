@@ -1,5 +1,7 @@
 # TwoWords Optimization: Popular Words for Major Conurbations
 
+https://github.com/globalwordnet/english-wordnet?tab=readme-ov-file
+
 ## Overview
 
 This optimization enhances the TwoWords coordinate system by strategically placing the most popular English words at array indices corresponding to major UK conurbations and popular areas.
