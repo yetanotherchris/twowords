@@ -31,4 +31,9 @@ public interface IWordMappingService
     /// Gets statistics about the loaded polygon and word requirements
     /// </summary>
     (int RequiredWords, double Precision, string PolygonBounds) GetPolygonStatistics();
+
+    /// <summary>
+    /// Gets the polygon coordinates for rendering on maps
+    /// </summary>
+    List<List<(double Longitude, double Latitude)>> GetPolygonCoordinates();
 }

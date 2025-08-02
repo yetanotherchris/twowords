@@ -53,7 +53,7 @@ public class TwoWordsController : ControllerBase
         var words = MapCoordinatesToWords(lat, lon);
         if (words == null)
         {
-            return BadRequest("Coordinates are outside the loaded polygon");
+            return BadRequest("Coordinates are outside the loaded polygon.");
         }
         return Ok(words);
     }

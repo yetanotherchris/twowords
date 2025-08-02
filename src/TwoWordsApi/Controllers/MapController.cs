@@ -69,6 +69,17 @@ public class MapController : ControllerBase
         var gridEndLat = lat + gridSize;
         var gridEndLon = lon + gridSize;
 
+        // Get polygon statistics for display
+        var polygonStats = _wordMappingService.GetPolygonStatistics();
+
+        // Get polygon coordinates for visualization
+        var polygons = _wordMappingService.GetPolygonCoordinates();
+        
+        // Convert polygon coordinates to JavaScript format
+        var polygonJs = string.Join(",", polygons.Select(polygon => 
+            "[" + string.Join(",", polygon.Select(point => $"[{point.Latitude:F6}, {point.Longitude:F6}]")) + "]"
+        ));
+
         // Create HTML page with embedded map
         var html = $@"<!DOCTYPE html>
 <html lang=""en"">
@@ -76,6 +87,8 @@ public class MapController : ControllerBase
     <meta charset=""UTF-8"">
     <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
     <title>TwoWords Map: {words}</title>
+    <link rel=""stylesheet"" href=""https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"" />
+    <script src=""https://unpkg.com/leaflet@1.9.4/dist/leaflet.js""></script>
     <style>
         body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -128,6 +141,15 @@ public class MapController : ControllerBase
         .map-container {{
             padding: 20px;
             text-align: center;
+        }}
+        #map {{
+            height: 450px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }}
         .map-container iframe {{
             border: 1px solid #d1d5db;
@@ -196,6 +218,9 @@ public class MapController : ControllerBase
                 <div class=""info-item"">
                     <strong>Indices:</strong> lat[{latIndex}], lon[{lonIndex}]
                 </div>
+                <div class=""info-item"">
+                    <strong>Coverage:</strong> {polygons.Count} polygon(s)
+                </div>
             </div>
             <div class=""precision-note"">
                 <strong>Note:</strong> This location represents a ~10×10 meter grid square. The exact coordinates shown are the southwestern corner of that grid.
@@ -203,10 +228,7 @@ public class MapController : ControllerBase
         </div>
 
         <div class=""map-container"">
-            <iframe width=""800"" height=""450"" 
-                    src=""https://www.openstreetmap.org/export/embed.html?bbox={lon - 0.01:F6}%2C{lat - 0.01:F6}%2C{lon + 0.01:F6}%2C{lat + 0.01:F6}&amp;layer=mapnik&amp;marker={lat:F6}%2C{lon:F6}"" 
-                    style=""border: 1px solid black"">
-            </iframe>
+            <div id=""map""></div>
             <div class=""map-link"">
                 <a href=""https://www.openstreetmap.org/?mlat={lat:F6}&amp;mlon={lon:F6}#map={clampedZoom}/{lat:F6}/{lon:F6}"" target=""_blank"">
                     View Larger Map
@@ -228,6 +250,43 @@ public class MapController : ControllerBase
     </div>
 
     <script>
+        // Initialize map
+        var map = L.map('map').setView([{lat:F6}, {lon:F6}], {clampedZoom});
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
+            attribution: '&copy; <a href=""https://www.openstreetmap.org/copyright"">OpenStreetMap</a> contributors'
+        }}).addTo(map);
+
+        // Add polygon(s) to map
+        var polygonCoords = [{polygonJs}];
+        polygonCoords.forEach(function(coords) {{
+            L.polygon(coords, {{
+                color: '#3b82f6',
+                weight: 2,
+                opacity: 0.8,
+                fillColor: '#3b82f6',
+                fillOpacity: 0.1
+            }}).addTo(map);
+        }});
+
+        // Add marker for the specific location
+        var marker = L.marker([{lat:F6}, {lon:F6}]).addTo(map);
+        marker.bindPopup('<b>{words}</b><br>Lat: {lat:F4}°N<br>Lon: {Math.Abs(lon):F4}°{(lon < 0 ? "W" : "E")}');
+
+        // Add grid square visualization
+        var gridSquare = L.rectangle([
+            [{lat:F6}, {lon:F6}],
+            [{lat + gridSize:F6}, {lon + gridSize:F6}]
+        ], {{
+            color: '#f59e0b',
+            weight: 2,
+            opacity: 0.8,
+            fillColor: '#f59e0b',
+            fillOpacity: 0.3
+        }}).addTo(map);
+        gridSquare.bindPopup('Grid Square (~10m × 10m)');
+
         // Copy coordinates function
         function copyCoordinates() {{
             const coords = '{lat:F6}, {lon:F6}';

@@ -140,9 +140,10 @@ public class GeoWordMapper
 
     public (double Latitude, double Longitude)? GetCoordinatesFromWords(string latitudeWord, string longitudeWord)
     {
-        // Find the indices of the words
-        int latitudeIndex = _words.IndexOf(latitudeWord);
-        int longitudeIndex = _words.IndexOf(longitudeWord);
+        // Find the indices of the words (case-insensitive)
+        // Since we now have a deduplicated word list, each word appears exactly once
+        int latitudeIndex = _words.FindIndex(w => w.Equals(latitudeWord, StringComparison.OrdinalIgnoreCase));
+        int longitudeIndex = _words.FindIndex(w => w.Equals(longitudeWord, StringComparison.OrdinalIgnoreCase));
 
         if (latitudeIndex == -1 || longitudeIndex == -1)
         {
@@ -175,6 +176,14 @@ public class GeoWordMapper
         var bounds = $"Lat: {_minLatitude:F6} to {_maxLatitude:F6}, Lon: {_minLongitude:F6} to {_maxLongitude:F6}";
         
         return (requiredWords, precision, bounds);
+    }
+
+    /// <summary>
+    /// Gets the polygon coordinates for rendering on maps
+    /// </summary>
+    public List<List<(double Longitude, double Latitude)>> GetPolygonCoordinates()
+    {
+        return _polygons;
     }
 
     public int GetRequiredWordCount(int precision = 5)

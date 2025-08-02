@@ -81,4 +81,9 @@ public class WordMappingService : IWordMappingService
     {
         return _geoWordMapper.GetPolygonStatistics();
     }
+
+    public List<List<(double Longitude, double Latitude)>> GetPolygonCoordinates()
+    {
+        return _geoWordMapper.GetPolygonCoordinates();
+    }
 }
