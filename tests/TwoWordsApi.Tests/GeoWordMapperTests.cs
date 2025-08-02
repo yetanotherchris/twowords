@@ -1,5 +1,5 @@
 
-using GeoWordMapperLibrary;
+using TwoWordsApi.Services;
 using Xunit;
 namespace TwoWordsApi.Tests;
 

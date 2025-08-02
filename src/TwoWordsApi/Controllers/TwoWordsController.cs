@@ -7,32 +7,6 @@ namespace TwoWordsApi.Controllers;
 [Route("api/[controller]")]
 public class TwoWordsController : ControllerBase
 {
-    // Shared logic for mapping coordinates to words (returns null if invalid)
-    private string? MapCoordinatesToWords(double lat, double lon)
-    {
-        if (lat < _wordMappingService.LatMin || lat > _wordMappingService.LatMax ||
-            lon < _wordMappingService.LonMin || lon > _wordMappingService.LonMax)
-        {
-            return null;
-        }
-
-        var latIndex = (int)Math.Floor((lat - _wordMappingService.LatMin) / _wordMappingService.Step);
-        var lonIndex = (int)Math.Floor((lon - _wordMappingService.LonMin) / _wordMappingService.Step);
-
-        if (latIndex >= _wordMappingService.LatCount || lonIndex >= _wordMappingService.LonCount)
-        {
-            return null;
-        }
-
-        if (!_wordMappingService.IsValidCoordinate(latIndex, lonIndex))
-        {
-            return null;
-        }
-
-        var latitudeWord = _wordMappingService.GetWordAtIndex(latIndex);
-        var longitudeWord = _wordMappingService.GetWordAtIndex(lonIndex);
-        return $"{latitudeWord}.{longitudeWord}";
-    }
     private readonly IWordMappingService _wordMappingService;
 
     public TwoWordsController(IWordMappingService wordMappingService)
@@ -40,14 +14,31 @@ public class TwoWordsController : ControllerBase
         _wordMappingService = wordMappingService;
     }
 
+    // Shared logic for mapping coordinates to words (returns null if invalid)
+    private string? MapCoordinatesToWords(double lat, double lon)
+    {
+        var (latWord, lonWord) = _wordMappingService.GetWords(lat, lon);
+        
+        if (string.IsNullOrEmpty(latWord) || string.IsNullOrEmpty(lonWord))
+        {
+            return null;
+        }
+
+        return $"{latWord}.{lonWord}";
+    }
+
     [HttpGet("/stats")]
     [ProducesResponseType(typeof(string), 200)]
     public IActionResult GetStats()
     {
-        var stats = $"Total words: {_wordMappingService.WordCount}\n" +
-                    $"Latitude range: {_wordMappingService.LatMin} to {_wordMappingService.LatMax}\n" +
-                    $"Longitude range: {_wordMappingService.LonMin} to {_wordMappingService.LonMax}\n" +
-                    $"Step (precision): {_wordMappingService.Step}\n";
+        var (requiredWords, precision, polygonBounds) = _wordMappingService.GetPolygonStatistics();
+        
+        var stats = $"Total words available: {_wordMappingService.WordCount:N0}\n" +
+                    $"Words required for polygon: {requiredWords:N0}\n" +
+                    $"Words sufficient: {(_wordMappingService.WordCount >= requiredWords ? "Yes" : "No")}\n" +
+                    $"Coordinate precision: {precision} degrees (~{(precision * 111000):F0}m at equator)\n" +
+                    $"Polygon bounds: {polygonBounds}\n" +
+                    $"Using GeoWordMapper with polygon-based coordinate validation\n";
 
         return Ok(stats);
     }
@@ -62,16 +53,7 @@ public class TwoWordsController : ControllerBase
         var words = MapCoordinatesToWords(lat, lon);
         if (words == null)
         {
-            // Determine specific error
-            if (lat < _wordMappingService.LatMin || lat > _wordMappingService.LatMax ||
-                lon < _wordMappingService.LonMin || lon > _wordMappingService.LonMax)
-                return BadRequest("Coordinates out of range");
-
-            var latIndex = (int)Math.Floor((lat - _wordMappingService.LatMin) / _wordMappingService.Step);
-            var lonIndex = (int)Math.Floor((lon - _wordMappingService.LonMin) / _wordMappingService.Step);
-            if (latIndex >= _wordMappingService.LatCount || lonIndex >= _wordMappingService.LonCount)
-                return BadRequest("Word list is too small for these coordinates");
-            return BadRequest("Coordinates appear to be over water or inaccessible terrain");
+            return BadRequest("Coordinates are outside the loaded polygon");
         }
         return Ok(words);
     }
@@ -82,19 +64,10 @@ public class TwoWordsController : ControllerBase
         [FromQuery] double lat, 
         [FromQuery] double lon)
     {
-        if (lat < _wordMappingService.LatMin || lat > _wordMappingService.LatMax || 
-            lon < _wordMappingService.LonMin || lon > _wordMappingService.LonMax)
-        {
-            return Ok(new { isValid = false, reason = "Out of range" });
-        }
-
-        var latIndex = (int)Math.Floor((lat - _wordMappingService.LatMin) / _wordMappingService.Step);
-        var lonIndex = (int)Math.Floor((lon - _wordMappingService.LonMin) / _wordMappingService.Step);
-        
-        var isValid = _wordMappingService.IsValidCoordinate(latIndex, lonIndex);
+        var isValid = _wordMappingService.IsValidCoordinate(lat, lon);
         return Ok(new { 
             isValid = isValid, 
-            reason = isValid ? "Valid land coordinates" : "Water or inaccessible terrain" 
+            reason = isValid ? "Valid coordinates within loaded polygon" : "Outside loaded polygon" 
         });
     }
 
@@ -129,26 +102,15 @@ public class TwoWordsController : ControllerBase
             return BadRequest($"Longitude word '{wordParts[1]}' not found in word list");
         }
 
-        // Check if indices are within valid coordinate range
-        if (latIndex >= _wordMappingService.LatCount)
+        // Try to get coordinates from words using the new method
+        var coordinates = _wordMappingService.GetCoordinatesFromWords(latitudeWord, longitudeWord);
+        
+        if (coordinates == null)
         {
-            return BadRequest($"Latitude word '{wordParts[0]}' corresponds to coordinates outside the supported range");
+            return BadRequest("Unable to determine coordinates for these words. Reverse mapping functionality is not yet fully implemented.");
         }
 
-        if (lonIndex >= _wordMappingService.LonCount)
-        {
-            return BadRequest($"Longitude word '{wordParts[1]}' corresponds to coordinates outside the supported range");
-        }
-
-        // Convert indices back to coordinates
-        var lat = _wordMappingService.LatMin + (latIndex * _wordMappingService.Step);
-        var lon = _wordMappingService.LonMin + (lonIndex * _wordMappingService.Step);
-
-        // Validate that the coordinates are valid using pre-computed validation
-        if (!_wordMappingService.IsValidCoordinate(latIndex, lonIndex))
-        {
-            return BadRequest("The coordinates for these words appear to be over water or inaccessible terrain");
-        }
+        var (lat, lon) = coordinates.Value;
 
         // Format response based on the format parameter
         string response;

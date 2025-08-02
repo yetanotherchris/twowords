@@ -17,6 +17,53 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
+// Register GeoWordMapper as a singleton
+builder.Services.AddSingleton<GeoWordMapper>(serviceProvider =>
+{
+    var environment = serviceProvider.GetRequiredService<IWebHostEnvironment>();
+    
+    // Determine paths for GeoJSON and words
+    string geoJsonPath;
+    string wordListPath;
+    var isInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+
+    if (isInContainer)
+    {
+        geoJsonPath = "/central-uk.json";
+        wordListPath = "/words.zip";
+    }
+    else
+    {
+        geoJsonPath = Path.Combine(environment.ContentRootPath, "central-uk.json");
+        wordListPath = Path.GetFullPath(Path.Combine(environment.ContentRootPath, "..", "..", "words.zip"));
+    }
+
+    // Create temporary word list file from zip for GeoWordMapper
+    string tempWordListPath = Path.GetTempFileName();
+    using (var zip = System.IO.Compression.ZipFile.OpenRead(wordListPath))
+    {
+        var wordsEntry = zip.Entries.FirstOrDefault(e => e.Name == "words.txt");
+        if (wordsEntry == null)
+        {
+            throw new FileNotFoundException("words.txt not found in words.zip");
+        }
+        
+        using (var stream = wordsEntry.Open())
+        using (var reader = new StreamReader(stream))
+        using (var writer = new StreamWriter(tempWordListPath))
+        {
+            string? line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                if (!string.IsNullOrWhiteSpace(line))
+                    writer.WriteLine(line.Trim());
+            }
+        }
+    }
+
+    return new GeoWordMapper(geoJsonPath, tempWordListPath);
+});
+
 // Register the word mapping service as a singleton
 builder.Services.AddSingleton<IWordMappingService, WordMappingService>();
 

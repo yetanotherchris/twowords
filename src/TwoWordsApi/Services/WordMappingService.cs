@@ -4,23 +4,16 @@ namespace TwoWordsApi.Services;
 
 public class WordMappingService : IWordMappingService
 {
-    public const string InvalidLat = "INVALID_LAT";
-    public const string InvalidLon = "INVALID_LON";
+    private readonly GeoWordMapper _geoWordMapper;
     private readonly string[] _allWords;
 
-    public double LatMin { get; } = 49.0;
-    public double LatMax { get; } = 60.0;
-    public double LonMin { get; } = -8.0;
-    public double LonMax { get; } = 2.0;
-    public double Step { get; } = 0.0001; // ~10m
-
-    public int LatCount { get; }
-    public int LonCount { get; }
     public int WordCount => _allWords.Length;
 
-    public WordMappingService(IWebHostEnvironment environment)
+    public WordMappingService(IWebHostEnvironment environment, GeoWordMapper geoWordMapper)
     {
-        // Determine the correct path for words.zip
+        _geoWordMapper = geoWordMapper;
+
+        // Load words from zip file (same logic as before for consistency)
         string zipPath;
         var isInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 
@@ -44,7 +37,13 @@ public class WordMappingService : IWordMappingService
 
         // Load words from zip file
         using var zip = ZipFile.OpenRead(zipPath);
-        using var stream = zip.Entries.First().Open();
+        var wordsEntry = zip.Entries.FirstOrDefault(e => e.Name == "words.txt");
+        if (wordsEntry == null)
+        {
+            throw new FileNotFoundException("words.txt not found in words.zip");
+        }
+        
+        using var stream = wordsEntry.Open();
         using var reader = new StreamReader(stream);
         
         var words = new List<string>();
@@ -55,37 +54,31 @@ public class WordMappingService : IWordMappingService
                 words.Add(line.Trim());
         }
         _allWords = words.ToArray();
-
-        // Calculate coordinate counts
-        LatCount = (int)Math.Ceiling((LatMax - LatMin) / Step) + 1;
-        LonCount = (int)Math.Ceiling((LonMax - LonMin) / Step) + 1;
-
-        // Validate word list size
-        if (_allWords.Length < Math.Max(LatCount, LonCount))
-            throw new Exception("Word list is not large enough for coverage.");
     }
 
-    public string GetWordAtIndex(int index)
+    public (string LatitudeWord, string LongitudeWord) GetWords(double latitude, double longitude)
     {
-        if (index < 0 || index >= _allWords.Length)
-            throw new ArgumentOutOfRangeException(nameof(index));
-        
-        return _allWords[index];
+        return _geoWordMapper.GetWords(latitude, longitude);
     }
 
-    public bool IsValidCoordinate(int latIndex, int lonIndex)
+    public bool IsValidCoordinate(double latitude, double longitude)
     {
-        if (latIndex < 0 || latIndex >= LatCount || lonIndex < 0 || lonIndex >= LonCount)
-            return false;
-
-        var latWord = _allWords[latIndex];
-        var lonWord = _allWords[lonIndex];
-
-        return latWord != InvalidLat && lonWord != InvalidLon;
+        var (latWord, lonWord) = _geoWordMapper.GetWords(latitude, longitude);
+        return !string.IsNullOrEmpty(latWord) && !string.IsNullOrEmpty(lonWord);
     }
 
     public int FindWordIndex(string word)
     {
         return Array.FindIndex(_allWords, w => w.Equals(word, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public (double Latitude, double Longitude)? GetCoordinatesFromWords(string latitudeWord, string longitudeWord)
+    {
+        return _geoWordMapper.GetCoordinatesFromWords(latitudeWord, longitudeWord);
+    }
+
+    public (int RequiredWords, double Precision, string PolygonBounds) GetPolygonStatistics()
+    {
+        return _geoWordMapper.GetPolygonStatistics();
     }
 }

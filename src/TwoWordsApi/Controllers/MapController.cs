@@ -45,32 +45,27 @@ public class MapController : ControllerBase
             return BadRequest($"Longitude word '{wordParts[1]}' not found in word list");
         }
 
-        // Check if indices are within valid coordinate range
-        if (latIndex >= _wordMappingService.LatCount)
+        // Get coordinates using the new method
+        var coordinates = _wordMappingService.GetCoordinatesFromWords(latitudeWord, longitudeWord);
+        
+        if (coordinates == null)
         {
-            return BadRequest($"Latitude word '{wordParts[0]}' corresponds to coordinates outside the supported range");
+            return BadRequest("Unable to determine coordinates for these words");
         }
 
-        if (lonIndex >= _wordMappingService.LonCount)
-        {
-            return BadRequest($"Longitude word '{wordParts[1]}' corresponds to coordinates outside the supported range");
-        }
+        var (lat, lon) = coordinates.Value;
 
-        // Convert indices back to coordinates
-        var lat = _wordMappingService.LatMin + (latIndex * _wordMappingService.Step);
-        var lon = _wordMappingService.LonMin + (lonIndex * _wordMappingService.Step);
-
-        // Validate that the coordinates are valid using pre-computed validation
-        if (!_wordMappingService.IsValidCoordinate(latIndex, lonIndex))
+        // Validate that the coordinates are valid
+        if (!_wordMappingService.IsValidCoordinate(lat, lon))
         {
-            return BadRequest("The coordinates for these words appear to be over water or inaccessible terrain");
+            return BadRequest("The coordinates for these words are outside the loaded polygon");
         }
 
         // Clamp zoom level between 1 and 19
         var clampedZoom = Math.Max(1, Math.Min(19, zoom ?? 15));
 
-        // Calculate grid bounds for visualization
-        var gridSize = _wordMappingService.Step; // 0.0001° ≈ 10m
+        // Calculate grid bounds for visualization (use a small fixed grid size)
+        var gridSize = 0.0001; // ~10m at UK latitudes
         var gridEndLat = lat + gridSize;
         var gridEndLon = lon + gridSize;
 
