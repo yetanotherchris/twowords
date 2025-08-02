@@ -36,14 +36,14 @@ public class WordsEndpointTests : IClassFixture<WebApplicationFactory<Program>>
     }
 
     [Fact]
-    public async Task ReturnsBadRequestForWaterCoordinates()
+    public async Task ReturnsBadRequestForCoordinatesOutsidePolygon()
     {
-        // Test coordinates that are in range but over water
+        // Test coordinates that are outside the loaded polygon
         var response = await _client.GetAsync("/words?lat=49.0&lon=-8.0");
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         
         var content = await response.Content.ReadAsStringAsync();
-        Assert.Contains("water", content.ToLower());
+        Assert.Contains("outside", content.ToLower());
     }
 
     [Fact]
