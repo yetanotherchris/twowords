@@ -121,16 +121,28 @@ def main():
         import os
         # Add the parent directory to the path so twowords_utils can be imported
         sys.path.insert(0, os.path.dirname(__file__))
-        from twowords_utils.optimize_word_list import optimize_words
-        optimize_words()
+        # Temporarily clear command line arguments to avoid conflicts
+        original_argv = sys.argv[:]
+        sys.argv = [sys.argv[0]]  # Keep only the script name
+        try:
+            from twowords_utils.optimize_word_list import optimize_words
+            optimize_words()
+        finally:
+            sys.argv = original_argv
 
     elif args.command == "calculate-indices":
         import sys
         import os
         # Add the parent directory to the path so twowords_utils can be imported
         sys.path.insert(0, os.path.dirname(__file__))
-        from twowords_utils.calculate_popular_indices import main as calc_main
-        calc_main()
+        # Temporarily clear command line arguments to avoid conflicts
+        original_argv = sys.argv[:]
+        sys.argv = [sys.argv[0]]  # Keep only the script name
+        try:
+            from twowords_utils.calculate_popular_indices import main as calc_main
+            calc_main()
+        finally:
+            sys.argv = original_argv
 
     elif args.command == "shuffle":
         import subprocess
@@ -144,8 +156,14 @@ def main():
         import os
         # Add the parent directory to the path so twowords_utils can be imported
         sys.path.insert(0, os.path.dirname(__file__))
-        from twowords_utils.verify_indices import main as verify_main
-        verify_main()
+        # Temporarily clear command line arguments to avoid conflicts
+        original_argv = sys.argv[:]
+        sys.argv = [sys.argv[0]]  # Keep only the script name
+        try:
+            from twowords_utils.verify_indices import main as verify_main
+            verify_main()
+        finally:
+            sys.argv = original_argv
 
     elif args.command == "zip":
         generate_zip()

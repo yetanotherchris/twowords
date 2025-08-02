@@ -13,3 +13,9 @@
 1. create 110,000 words with INVALID_POINT
 2. Using the indices that are mapped to city center point radiuses.
   1. Fill the indices
+
+# Saturday
+
+- A good words list for a central polygon
+- This may need multiple polygons for central uk, north uk, scotland, wales
+- A boring/less common words list for out of this central polygon
