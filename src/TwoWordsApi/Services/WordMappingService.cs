@@ -1,4 +1,4 @@
-using System.IO.Compression;
+using System;
 
 namespace TwoWordsApi.Services;
 
@@ -13,42 +13,30 @@ public class WordMappingService : IWordMappingService
     {
         _geoWordMapper = geoWordMapper;
 
-        // Load words from zip file (same logic as before for consistency)
-        string zipPath;
+        // Load words from text file
+        string wordsPath;
         var isInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 
         if (isInContainer)
         {
-            zipPath = "/words.zip";
+            wordsPath = "/app/words.txt";
         }
         else
         {
-            zipPath = Path.GetFullPath(Path.Combine(environment.ContentRootPath,
-                "..", "..", "words.zip"));
+            wordsPath = Path.Combine(environment.ContentRootPath, "words.txt");
         }
 
         // Verify the file exists
-        if (!File.Exists(zipPath))
+        if (!File.Exists(wordsPath))
         {
-            throw new FileNotFoundException($"words.zip not found at {zipPath}. " +
+            throw new FileNotFoundException($"words.txt not found at {wordsPath}. " +
                 $"ContentRootPath: {environment.ContentRootPath}, " +
                 $"IsInContainer: {isInContainer}");
         }
 
-        // Load words from zip file
-        using var zip = ZipFile.OpenRead(zipPath);
-        var wordsEntry = zip.Entries.FirstOrDefault(e => e.Name == "words.txt");
-        if (wordsEntry == null)
-        {
-            throw new FileNotFoundException("words.txt not found in words.zip");
-        }
-        
-        using var stream = wordsEntry.Open();
-        using var reader = new StreamReader(stream);
-        
+        // Load words from text file
         var words = new List<string>();
-        string? line;
-        while ((line = reader.ReadLine()) != null)
+        foreach (var line in File.ReadAllLines(wordsPath))
         {
             if (!string.IsNullOrWhiteSpace(line))
                 words.Add(line.Trim());

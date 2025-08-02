@@ -4,14 +4,14 @@ TwoWords is a stateless geocoding system that maps UK/Ireland latitude and longi
 
 ## How It Works
 - **Deterministic Mapping:** Each coordinate is mapped to a 10-meter grid. Latitude and longitude indices are mapped to words from a curated list.
-- **No Database:** All mapping is in-memory and deterministic. The API loads a single `words.zip` file at startup.
+- **No Database:** All mapping is in-memory and deterministic. The API loads a single `words.txt` file at startup.
 - **Geographic Filtering:** Only coordinates within the UK/Ireland land polygon are valid. Out-of-bounds or water coordinates are rejected.
 
 ## Project Structure
 - `src/TwoWordsApi/` — ASP.NET Core API (controllers, services, config)
+- `src/TwoWordsApi/words.txt` — Word list used by the API
 - `data/` — Data pipeline scripts, word sources, and output files
 - `data/words/curated-by-chris-words.txt` — Main curated word list
-- `words.zip` — Zipped word list used by the API
 - `tests/TwoWordsApi.Tests/` — xUnit test suite for API endpoints
 
 ## Running the API
@@ -30,8 +30,8 @@ dotnet run --urls http://localhost:5000
 
 ## Regenerating the Word List
 See `data/README.md` for full details. In summary:
-- Run the Python CLI (`twowords_cli.py`) to curate, filter, and zip the word list
-- Place the resulting `words.zip` at the repo root for the API to use
+- The main curated word list is at `data/words/curated-by-chris-words.txt`
+- Copy this file to `src/TwoWordsApi/words.txt` for the API to use
 
 ## Testing
 Run all API tests with:
