@@ -21,20 +21,19 @@ builder.Services.AddOpenApi();
 builder.Services.AddSingleton<GeoWordMapper>(serviceProvider =>
 {
     var environment = serviceProvider.GetRequiredService<IWebHostEnvironment>();
+
+    string geoJsonPath = Path.Combine(environment.ContentRootPath, "central-uk.json");
     
-    // Determine paths for GeoJSON and words
-    string geoJsonPath;
-    string wordListPath;
+    // Determine paths for words
     var isInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+    string wordListPath;
 
     if (isInContainer)
     {
-        geoJsonPath = "/central-uk.json";
         wordListPath = "/words.zip";
     }
     else
     {
-        geoJsonPath = Path.Combine(environment.ContentRootPath, "central-uk.json");
         wordListPath = Path.GetFullPath(Path.Combine(environment.ContentRootPath, "..", "..", "words.zip"));
     }
 
