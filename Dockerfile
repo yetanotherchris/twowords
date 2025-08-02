@@ -35,7 +35,7 @@ COPY --from=publish /app/publish .
 
 # Copy the words.zip file to the container root
 # The WordMappingService expects it at /words.zip when DOTNET_RUNNING_IN_CONTAINER=true
-COPY --from=build /src/words.zip /words.zip
+COPY words.zip /words.zip
 
 # Set environment variables
 ENV ASPNETCORE_URLS=http://+:8080
