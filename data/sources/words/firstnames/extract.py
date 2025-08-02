@@ -24,30 +24,31 @@ print(f"Examining key: '{first_key}'")
 print(f"Contents: {data[first_key]}")
 
 
-uk_names = {}
+all_names = {}
 for name, info in data.items():
-    if 'GB' in info['country']:  # GB = Great Britain/UK
-        uk_names[name] = info
+    if 'GB' in info['country']: # or 'US' in info['country']: 
+        all_names[name] = info
 
-print(f"Found {len(uk_names)} names that appear in the UK")
+print(f"Found {len(all_names)} names that appear in the U/US")
 
-# Filter UK names: no spaces and more than 1 character
-filtered_uk_names = []
-for name in uk_names.keys():
+# Filter names
+filtered_all_names = []
+for name in all_names.keys():
     if (' ' not in name and 
-        len(name) > 1 and 
-        name.isalpha() and 
-        name.isascii() and
-        uk_names[name]['country']['GB'] > 0.3):  # At least 10% UK probability
-        filtered_uk_names.append(name.lower())
+        len(name) > 1 and name.isalpha() and name.isascii()):
+        country = all_names[name].get('country', {})  # Safely get 'country' as empty dict if missing
+        us_prob = country.get('US', 0)  # Default to 0 if 'US' missing
+        gb_prob = country.get('GB', 0)  # Default to 0 if 'GB' missing
+        if gb_prob > 0.1:  # At least 20% US or 30% GB probability
+            filtered_all_names.append(name.lower())
 
 # Remove similar sounding names, e.g. ['alistair', 'alistair', 'alisdair', 'alison']
-deduplicated_names = remove_similar_names(filtered_uk_names)
+#filtered_all_names = remove_similar_names(filtered_all_names)
 
-print(f"Found {len(filtered_uk_names)} filtered UK names")
-print(f"Found {len(deduplicated_names)} non-similar sounding UK names")
-print("First 100:", deduplicated_names[:100])
+print(f"Found {len(filtered_all_names)} filtered UK names")
+print(f"Found {len(filtered_all_names)} non-similar sounding UK names")
+print("First 100:", filtered_all_names[:100])
 
 with open("uk_firstnames.txt", 'w', encoding='utf-8') as f:
-    for name in deduplicated_names:
+    for name in filtered_all_names:
         f.write(name + '\n')
