@@ -1,1 +1,0 @@
-https://github.com/philipperemy/name-dataset/tree/master
