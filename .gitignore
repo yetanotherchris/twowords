@@ -420,3 +420,5 @@ FodyWeavers.xsd
 # Generated word list
 data/temp/*
 data/output/*
+# Regenerable word-list rebuild artifact (see data/words/v2/build_64434.py)
+data/words/v2/curated-rebuilt-*.txt

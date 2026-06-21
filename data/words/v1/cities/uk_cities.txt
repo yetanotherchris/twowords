@@ -675,3 +675,5 @@ yateley
 yeadon
 yeovil
 york
+kauai
+honolulu
