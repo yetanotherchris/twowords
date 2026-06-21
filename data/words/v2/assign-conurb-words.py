@@ -67,10 +67,12 @@ def main():
     # Load the base alpha v2 list (this is the "dictionary" order before geographic prioritization)
     base_list = [w.strip() for w in (BASE / "curated-by-chris-words.txt").read_text(encoding="utf-8").splitlines() if w.strip()]
     assert len(base_list) == TOTAL_WORDS, f"Expected {TOTAL_WORDS}, got {len(base_list)}"
+    # Uniqueness is required for the permutation guarantee below (filtering a placed word would
+    # otherwise drop every copy of it and run the filler short).
+    assert len(set(base_list)) == len(base_list), "base list contains duplicate words"
 
     # The "commonest" pool is the first 10k in the current curation order
     common_pool = base_list[:10000]
-    remaining_pool = base_list[10000:]
 
     # Compute index sets
     conurb_indices = {}
@@ -79,26 +81,35 @@ def main():
         conurb_indices[name] = idxs
         print(f"{name}: {len(idxs)} candidate indices")
 
-    # Assign chunks to chosen indices per conurb (take the lowest numeric indices for determinism)
-    # Process in CONURB_ALLOC order so London wins overlaps.
+    # Assign common words to the lowest free index in each conurbation (ascending index order
+    # for determinism). Process in CONURB_ALLOC order so London wins overlaps.
+    #
+    # A common word is consumed from common_pool ONLY when it is actually placed. This is what
+    # keeps the result a true permutation of base_list: advancing a cursor by the full `alloc`
+    # regardless of overlaps would skip (lose) common words and later run the filler short,
+    # emitting the literal "filler" string. By draining a single iterator on placement, every
+    # unconsumed common word simply stays in the pool and is spliced back in below.
     priority_assignments = {}  # index -> word
-    common_cursor = 0
     per_conurb_words = {}
+    common_iter = iter(common_pool)
 
     for name, alloc in CONURB_ALLOC:
         idxs = conurb_indices[name]
-        # Choose first N (sorted ascending index order)
-        chosen = idxs[:alloc]
-        chunk = common_pool[common_cursor : common_cursor + alloc]
-        common_cursor += alloc
-        per_conurb_words[name] = []
-        for i, w in zip(chosen, chunk):
+        words_here = []
+        for i in idxs:
+            if len(words_here) >= alloc:
+                break
             if i in priority_assignments:
-                # overlap; keep the earlier (higher priority conurb)
+                # already claimed by an earlier (higher-priority) conurbation
                 continue
+            try:
+                w = next(common_iter)
+            except StopIteration:
+                break  # common pool exhausted; remaining slots fall through to filler
             priority_assignments[i] = w
-            per_conurb_words[name].append(w)
-        print(f"  assigned {len(per_conurb_words[name])} common words to {name} (indices {chosen[0] if chosen else 'n/a'}...)")
+            words_here.append(w)
+        per_conurb_words[name] = words_here
+        print(f"  assigned {len(words_here)} common words to {name} (first index {idxs[0] if idxs else 'n/a'})")
 
     print(f"\nTotal priority slots filled: {len(priority_assignments)}")
 
@@ -110,21 +121,22 @@ def main():
         out.write_text("\n".join(words_for_area) + "\n", encoding="utf-8")
         print(f"Wrote {out} ({len(words_for_area)} words)")
 
-    # Build the final list: place priority words at their indices, splice remaining into the gaps
+    # Build the final list: place priority words at their indices, splice every remaining word
+    # (unconsumed common words first, then the rest of the pool) into the gaps in base order.
+    # This is exactly base_list minus the placed words, so it always fills the gaps perfectly.
     result = [None] * TOTAL_WORDS
     for idx, w in priority_assignments.items():
         result[idx] = w
 
-    filler = iter(remaining_pool)
+    placed = set(priority_assignments.values())
+    filler = iter(w for w in base_list if w not in placed)
     for i in range(TOTAL_WORDS):
         if result[i] is None:
-            try:
-                result[i] = next(filler)
-            except StopIteration:
-                # Should not happen
-                result[i] = "filler"
+            result[i] = next(filler)
 
-    # Any leftover common words? (if more slots than allocated, but we didn't)
+    # Guarantee the output is a true permutation of the input: no word dropped or duplicated.
+    assert sorted(result) == sorted(base_list), "conurb prioritization is not a permutation of the base list"
+
     # Write the prioritized list
     out_main = BASE / "curated-by-chris-words-conurb-prioritized.txt"
     out_main.write_text("\n".join(result) + "\n", encoding="utf-8")

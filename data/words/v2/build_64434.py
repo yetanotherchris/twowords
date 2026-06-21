@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 """
-Build the exact 64434 word list for TwoWords.
+Build a 64434-word candidate list for TwoWords (reference regeneration of the curation method).
 
-Sources (in v2/):
-  kaggle/common_clean.txt
-  claude/food_dishes_final.txt
-  wordnet/wordnet_*.txt
-  norvig/norvig_clean.txt   (pre-filtered)
+Sources are resolved via src_path() from $TWOWORDS_SOURCES, then v2/, then the v1/ source tree
+(kaggle/, claude/, cities/, wordnet/, norvig/, profanity.txt all live under data/words/v1/).
 
-Outputs:
-  curated-exact-64434.txt
-  curated-by-chris-words.txt
+Output:
+  curated-rebuilt-64434.txt
+
+NOTE: this does NOT overwrite the committed curated-by-chris-words.txt, which was further
+hand-curated after generation. Run this to reproduce the *method*, then diff to review drift.
 
 Rules:
 - 3-8 lowercase a-z, at least one vowel
@@ -21,6 +20,7 @@ Rules:
 - Exactly 64434 or as many clean words as possible
 """
 import csv
+import os
 import re
 import sys
 from pathlib import Path
@@ -29,16 +29,37 @@ REQUIRED = 64434
 
 BASE = Path(__file__).resolve().parent
 
+# The raw word sources (kaggle/, claude/, cities/, wordnet/, norvig/, profanity.txt) live in the
+# v1 source tree, not here in v2. Resolve each source from the first root that has it:
+#   1. $TWOWORDS_SOURCES (optional override)   2. v2/ (in case sources are copied alongside)   3. v1/
+# This lets the script run from a clean checkout instead of crashing on a missing file.
+SOURCE_ROOTS = []
+if os.environ.get("TWOWORDS_SOURCES"):
+    SOURCE_ROOTS.append(Path(os.environ["TWOWORDS_SOURCES"]))
+SOURCE_ROOTS += [BASE, BASE.parent / "v1"]
+
+
+def src_path(rel: str):
+    """Return the first existing source file for `rel`, or None if no root has it."""
+    for root in SOURCE_ROOTS:
+        p = root / rel
+        if p.exists():
+            return p
+    return None
+
 STOPS = set("""the and for are but not you all can had her was one our out day get has him his how man new now old see two way who boy end did its let put say she too use dad mom off own may try ask big per act set yet far few that with this from which have were they will their been other there would more such when any these time than some what about state only into also them said under first made should after shall your most could then over each year work where years between those same many through upon must well very general before used because being part like united people during public section number even make court case system much three both water law life company service good without order great american while however york long high national right does city just here world another data business given know program little since present every house men report less back place total large take down small county second control might research office last point form board still children interest federal study area action value fact line found power states within school against""".split())
 
 CITIES = set()
-with open(BASE / "cities/uk_cities.txt", errors="ignore") as f:
-    for line in f:
-        t = line.strip().lower()
-        if t:
-            CITIES.add(t)
-if (BASE / "cities/world-cities.csv").exists():
-    with open(BASE / "cities/world-cities.csv", encoding="utf-8", errors="ignore") as f:
+uk_cities = src_path("cities/uk_cities.txt")
+if uk_cities:
+    with open(uk_cities, errors="ignore") as f:
+        for line in f:
+            t = line.strip().lower()
+            if t:
+                CITIES.add(t)
+world_cities = src_path("cities/world-cities.csv")
+if world_cities:
+    with open(world_cities, encoding="utf-8", errors="ignore") as f:
         rdr = csv.reader(f)
         next(rdr, None)
         for row in rdr:
@@ -48,11 +69,13 @@ if (BASE / "cities/world-cities.csv").exists():
                     CITIES.add(n)
 
 PROFS = set()
-with open(BASE / "profanity.txt", errors="ignore") as f:
-    for line in f:
-        t = line.strip().lower()
-        if 3 <= len(t) <= 8:
-            PROFS.add(t)
+profanity = src_path("profanity.txt")
+if profanity:
+    with open(profanity, errors="ignore") as f:
+        for line in f:
+            t = line.strip().lower()
+            if 3 <= len(t) <= 8:
+                PROFS.add(t)
 
 ACRO_LIST = [
     'aaa','abc','api','aws','cdn','cli','cpu','css','dns','faq','ftp','gpu','gui','html','http','https','ide','ios','ip','iso','jpg','json','jwt','lcd','led','mac','md5','mp3','mp4','npm','pdf','png','ram','rom','rss','sdk','sql','ssh','ssl','svg','tcp','udp','url','usb','utf','vpn','xml','yaml','yml','gif','wav','mov','avi','exe','zip','tar','rar','deb','rpm','apk','ipa','bin','dat','tmp','log','src','lib','dev','prod','test','ci','cd','pr','mr','ui','ux','ai','ml','llm','gpt','bert','rag','db','orm','mvc','spa','pwa','wasm','webgl','sftp','saml','oidc','csrf','xss','nosql','rtc','p2p','www','csv','md'
@@ -74,8 +97,8 @@ def test_good(w: str) -> bool:
 print("Loading sources...")
 
 kag = []
-p = BASE / "kaggle/common_clean.txt"
-if p.exists():
+p = src_path("kaggle/common_clean.txt")
+if p:
     with open(p, encoding="utf-8", errors="ignore") as f:
         for line in f:
             w = line.strip().lower()
@@ -84,8 +107,8 @@ if p.exists():
     print(f"  kaggle: {len(kag)}")
 
 foods = []
-p = BASE / "claude/food_dishes_final.txt"
-if p.exists():
+p = src_path("claude/food_dishes_final.txt")
+if p:
     with open(p, encoding="utf-8", errors="ignore") as f:
         for line in f:
             w = line.strip().lower()
@@ -95,15 +118,50 @@ if p.exists():
     print(f"  foods: {len(foods)}")
 
 conv_raw = [
-    'wifi','bluetooth','yapping','yap','meme','vibe','vibes','ghost','flex','troll','spam','ping','zoom','tweet','post','like','share','stream','chat','app','bug','crash','sync','cache','cloud','login','logout','update','swipe','scroll','tap','click','drag','drop','snap','selfie','story','reel','clip','filter','hashtag','emoji','gif','mood','cringe','sus','cap','bet','slay','lit','fire','dope','sick','yeet','rizz','skibidi','sigma','gyatt','delulu','bruh','drip','glow','hype','fomo','jomo','stan','shade','salty','savage','roast','burn','clapback','ratio','mid','bussin','cheugy','main','character','npc','alpha','beta','omega','goat','based','cope','seethe','lfg','dub','sheesh','fr','frfr','ong','pog','poggers','kek','kekw','lul','lmao','lmfao','rofl','af','asf','iykyk','fyi','tldr','imo','imho','idk','idc','smh','facepalm','wtf','wth','brb','afk','irl','fwiw','nsfw','sfw','ama','eli5','op','yolo','tiktok','insta','snapchat','reddit','discord','slack','teams','meet','skype','facetime','airdrop','airplay','hotspot','vpn','dns','ip','mac','gui','cli','api','sdk','ide','fix','patch','release','deploy','commit','push','pull','merge','branch','fork','clone','repo','git','npm','yarn','pip','cargo','docker','pod','helm','aws','gcp','azure','lambda','s3','cdn','ssl','tls','http','https','tcp','udp','ssh','ftp','jwt','oauth','sql','nosql','db','orm','react','vue','svelte','angular','astro','next','nuxt','vite','webpack','babel','ts','js','jsx','tsx','css','scss','sass','html','xml','json','yaml','yml','toml','md','csv','log','kafka','rabbit','redis','spark','flink','node','python','rust','java','kotlin','swift','go','ruby','php','shell','bash','zsh','fish','make','cmake','gradle','maven','nginx','haproxy','fastapi','flask','django','rails','spring','express','laravel','electron','flutter','ios','android','linux','macos','windows','unix','async','await','promise','thread','lock','queue','stack','heap','array','list','map','set','hash','tree','graph','vector','matrix','token','embed','prompt','agent','tool','chunk','index','faiss','duckdb','pandas','numpy','torch','jax','keras','llm','gpt','bert','diffusion','stable','genai','rag','ml','ai','web','net','site','link','feed','live','text','dm','tag','heart','save','view','play','pause','stop','skip','search','find','open','close','edit','delete','add','hot','cold','fast','slow','good','bad','nice','cool','fun','sad','happy','mad','tired','bored','busy','free','easy','hard','simple','clean','fresh','sweet','sour','spicy','loud','quiet','bright','dark','light','heavy','soft','wet','dry','warm','young','rich','poor','high','low','long','short','wide','deep','full','empty','true','false','yes','no','ok','fine','great','best','worst','first','last','next','top','bottom','left','right','center','front','back','edge','line','point','icon','image','photo','pic','video','audio','sound','music','song','beat','voice','talk','speak','say','tell','ask','answer','question','reply','comment','status','broadcast','podcast','radio','tv','netflix','youtube','messenger','webrtc','p2p','mesh','server','client','host','backup','restore','upgrade','install','uninstall','download','upload','cookie','session','signup','signin','auth','secret','password','pass','pin','encrypt','decrypt','hash','sign','verify','cert','proxy','firewall','router','switch','modem','display','screen','touch','mouse','trackpad','keyboard','type','input','output','file','folder','dir','path','url','page','tab','window','dialog','popup','menu','button','avatar','pdf','zip','tar','exe','app','bin','dat','tmp','temp','src','build','dist','lib','test','docs','readme','license','todo','fixme','hack','wip','done','ship','ci','cd','dev','prod','stage','local','remote','origin','main','master','develop','feature','bugfix','hotfix','tag','commit','rebase','cherry','pick','stash','reset','revert','amend','squash','draft','pr','mr','issue','epic','story','task','ticket','sprint','backlog','roadmap','milestone','deadline','eta','asap','oc','tl','dr','ngmi','wagmi','w','l','looksmax','mewing','edging','gooning','fanum','tax','ohio','chad','gigachad','doomer','zoomer','boomer','millennial','genz','genx','okboomer','sksksk'
+    'wifi','bluetooth','yapping','yap','meme','vibe','vibes','ghost','flex','troll','spam','ping','zoom','tweet',
+    'post','like','share','stream','chat','app','bug','crash','sync','cache','cloud','login','logout','update',
+    'swipe','scroll','tap','click','drag','drop','snap','selfie','story','reel','clip','filter','hashtag','emoji',
+    'gif','mood','cringe','sus','cap','bet','slay','lit','fire','dope','sick','sigma','drip','glow','hype','fomo',
+    'jomo','stan','shade','salty','savage','roast','burn','ratio','mid','main','character','npc','alpha','beta',
+    'omega','goat','based','cope','seethe','lfg','dub','fr','frfr','ong','af','fyi','tldr','imo','imho','idk','idc',
+    'smh','wtf','wth','brb','afk','irl','fwiw','nsfw','sfw','ama','eli5','op','yolo','tiktok','insta','snapchat',
+    'reddit','discord','slack','teams','meet','skype','facetime','airdrop','airplay','hotspot','vpn','dns','ip','mac',
+    'gui','cli','api','sdk','ide','fix','patch','release','deploy','commit','push','pull','merge','branch','fork',
+    'clone','repo','git','npm','yarn','pip','cargo','docker','pod','helm','aws','gcp','azure','lambda','s3','cdn',
+    'ssl','tls','http','https','tcp','udp','ssh','ftp','jwt','oauth','sql','nosql','db','orm','react','vue','svelte',
+    'angular','astro','next','nuxt','vite','webpack','babel','ts','js','jsx','tsx','css','scss','sass','html','xml',
+    'json','yaml','yml','toml','md','csv','log','kafka','rabbit','redis','spark','flink','node','python','rust',
+    'java','kotlin','swift','go','ruby','php','shell','bash','zsh','fish','make','cmake','gradle','maven','nginx',
+    'haproxy','fastapi','flask','django','rails','spring','express','laravel','electron','flutter','ios','android',
+    'linux','macos','windows','unix','async','await','promise','thread','lock','queue','stack','heap','array','list',
+    'map','set','hash','tree','graph','vector','matrix','token','embed','prompt','agent','tool','chunk','index',
+    'faiss','duckdb','pandas','numpy','torch','jax','keras','llm','gpt','bert','diffusion','stable','genai','rag',
+    'ml','ai','web','net','site','link','feed','live','text','dm','tag','heart','save','view','play','pause','stop',
+    'skip','search','find','open','close','edit','delete','add','hot','cold','fast','slow','good','bad','nice','cool',
+    'fun','sad','happy','mad','tired','bored','busy','free','easy','hard','simple','clean','fresh','sweet','sour',
+    'spicy','loud','quiet','bright','dark','light','heavy','soft','wet','dry','warm','young','rich','poor','high',
+    'low','long','short','wide','deep','full','empty','true','false','yes','no','ok','fine','great','best','worst',
+    'first','last','next','top','bottom','left','right','center','front','back','edge','line','point','icon','image',
+    'photo','pic','video','audio','sound','music','song','beat','voice','talk','speak','say','tell','ask','answer',
+    'question','reply','comment','status','broadcast','podcast','radio','tv','netflix','youtube','messenger','webrtc',
+    'p2p','mesh','server','client','host','backup','restore','upgrade','install','uninstall','download','upload',
+    'cookie','session','signup','signin','auth','secret','password','pass','pin','encrypt','decrypt','hash','sign',
+    'verify','cert','proxy','firewall','router','switch','modem','display','screen','touch','mouse','trackpad',
+    'keyboard','type','input','output','file','folder','dir','path','url','page','tab','window','dialog','popup',
+    'menu','button','avatar','pdf','zip','tar','exe','app','bin','dat','tmp','temp','src','build','dist','lib','test',
+    'docs','readme','license','todo','fixme','hack','wip','done','ship','ci','cd','dev','prod','stage','local',
+    'remote','origin','main','master','develop','feature','bugfix','hotfix','tag','commit','rebase','cherry','pick',
+    'stash','reset','revert','amend','squash','draft','pr','mr','issue','epic','story','task','ticket','sprint',
+    'backlog','roadmap','milestone','deadline','eta','asap','oc','tl','dr','w','l','tax','ohio','chad','doomer',
+    'zoomer','boomer','millennial','sksksk',
 ]
 conv = sorted(set(w for w in conv_raw if test_good(w)))
 print(f"  conv: {len(conv)}")
 
 wn = []
 for fn in ("wordnet/wordnet_nouns_filtered.txt", "wordnet/wordnet_verbs_filtered.txt", "wordnet/wordnet_adjectives_filtered.txt"):
-    p = BASE / fn
-    if p.exists():
+    p = src_path(fn)
+    if p:
         with open(p, encoding="utf-8", errors="ignore") as f:
             for line in f:
                 w = line.strip().lower()
@@ -113,8 +171,8 @@ wn = sorted(set(wn))
 print(f"  wordnet: {len(wn)}")
 
 nor = []
-p = BASE / "norvig/norvig_clean.txt"
-if p.exists():
+p = src_path("norvig/norvig_clean.txt")
+if p:
     with open(p, encoding="utf-8", errors="ignore") as f:
         for line in f:
             w = line.strip().lower()
@@ -122,7 +180,18 @@ if p.exists():
                 nor.append(w)
     print(f"  norvig (pre-cleaned): {len(nor)}")
 else:
-    print("  norvig_clean.txt not found, skipping")
+    # Fall back to the unfiltered Norvig list and apply the same quality filter.
+    p = src_path("norvig/norvig-words-filtered.txt")
+    if p:
+        with open(p, encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                w = line.strip().lower()
+                if test_good(w):
+                    nor.append(w)
+        nor = sorted(set(nor))
+        print(f"  norvig (filtered fallback): {len(nor)}")
+    else:
+        print("  norvig source not found, skipping")
 
 # Combine
 cands = sorted(set(kag + foods + conv + wn + nor))
@@ -258,17 +327,16 @@ if len(lst) < REQUIRED:
 
 print(f"Final count: {len(lst)}")
 
-# Write
-out1 = BASE / "curated-exact-64434.txt"
-out2 = BASE / "curated-by-chris-words.txt"
+# Write to a distinct rebuild file. We deliberately do NOT overwrite the committed
+# curated-by-chris-words.txt: that list was further hand-curated after generation, so this
+# script reproduces the *method*, not the exact bytes. Diff the two to review drift.
+out1 = BASE / "curated-rebuilt-64434.txt"
 with open(out1, "w", encoding="utf-8") as f:
     for w in lst:
         f.write(w + "\n")
-with open(out2, "w", encoding="utf-8") as f:
-    for w in lst:
-        f.write(w + "\n")
 
-print(f"Written {out1.name} and {out2.name}")
+print(f"Written {out1.name}")
+print("(Committed source of truth is curated-by-chris-words.txt; compare with `diff` to review drift.)")
 
 # Validation output
 print("=== First 20 (priority foods/conv should be first) ===")
