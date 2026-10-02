@@ -2,6 +2,9 @@
 
 TwoWords is a stateless geocoding system that maps UK/Ireland latitude and longitude coordinates to two memorable words, similar to what3words but using only two words. The project consists of a .NET API for serving word pairs and a Python-based data pipeline for generating the word lists.
 
+- [Example: `estrade.rainout`](https://twowords-74939072451.europe-west1.run.app/map?words=estrade.rainout)
+- [Test the API](https://twowords-74939072451.europe-west1.run.app/)
+
 ## How It Works
 - **Deterministic Mapping:** Each coordinate is mapped to a 10-meter grid. Latitude and longitude indices are mapped to words from a curated list.
 - **No Database:** All mapping is in-memory and deterministic. The API loads a single `words.txt` file at startup.
